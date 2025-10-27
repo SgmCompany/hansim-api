@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: ridersplace
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://ridersplace.cpu2ayk4el3m.ap-northeast-2.rds.amazonaws.com:3306/ridersplace?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: admin
+    password: ridersplace1!
+    hikari:
+      connectionTestQuery: SELECT 1
+      data-source-properties:
+        rewriteBatchedStatements: true
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+        format_sql: false
+        jdbc.batch_size: 1000
+        order_inserts: true
+        order_updates: true
+
+springdoc:
+  override-with-generic-response: false
+  swagger-ui:
+    server-url: http://localhost:8080
+
+logging:
+  pattern:
+    console: "%-5level %msg [%class]%n"
+
+#logging:
+#  level:
+#    org:
+#      hibernate:
+#        orm.jdbc.bind: trace
+#      springframework.web: DEBUG
