@@ -1,11 +1,13 @@
 spring:
   application:
-    name: ridersplace
+    name: hansim
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://ridersplace.cpu2ayk4el3m.ap-northeast-2.rds.amazonaws.com:3306/ridersplace?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
-    username: admin
-    password: ridersplace1!
+    url: jdbc:mysql://mysql:3306/hansim?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=utf8&useUnicode=true
+#    url:     url: jdbc:mysql://127.0.0.1:3307/hansim?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=utf8&useUnicode=true
+#    url: jdbc:mysql://ridersplace.cpu2ayk4el3m.ap-northeast-2.rds.amazonaws.com:3306/ridersplace?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+    username: root
+    password: 1994
     hikari:
       connectionTestQuery: SELECT 1
       data-source-properties:

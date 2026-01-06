@@ -1,0 +1,50 @@
+version: "3.9"
+
+networks:
+  hansim_net:
+
+volumes:
+  hansim_db:
+
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: mysql-hansim
+    environment:
+#      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      TZ: ${TZ}
+    command: ["--character-set-server=utf8mb4","--collation-server=utf8mb4_0900_ai_ci"]
+    volumes:
+      - hansim_db:/var/lib/mysql
+      # 초기 스키마/시드가 필요하면 프로젝트 루트에 initdb/ 폴더를 만들고 아래 주석 해제
+      # - ../initdb:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${MYSQL_PORT_HOST}:3306"      # host 3307 -> container 3306
+    healthcheck:
+      test: [ "CMD-SHELL","mysqladmin ping -h 127.0.0.1 -proot_hansim || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks: [hansim_net]
+
+  app:
+    build:
+      context: ..
+      dockerfile: ./Dockerfile
+    image: hansim-api:dev
+    container_name: hansim-api
+    environment:
+      TZ: ${TZ}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=utf8&useUnicode=true
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "${APP_PORT_HOST}:8080"        # host 8081 -> container 8080
+    networks: [hansim_net]
