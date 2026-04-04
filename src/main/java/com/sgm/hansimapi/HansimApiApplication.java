@@ -9,5 +9,4 @@ public class HansimApiApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(HansimApiApplication.class, args);
 	}
-
 }
