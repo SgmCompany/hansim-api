@@ -1,7 +1,7 @@
 package com.sgm.hansimapi.infra.google;
 
-import com.sgm.hansimapi.domain.user.client.GoogleAuthClient;
-import com.sgm.hansimapi.domain.user.client.GoogleUserInfo;
+import com.sgm.hansimapi.domain.user.port.GoogleAuthClient;
+import com.sgm.hansimapi.domain.user.port.GoogleUserInfo;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;

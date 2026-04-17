@@ -1,18 +1,21 @@
 package com.sgm.hansimapi.presentation;
 
+import com.sgm.hansimapi.application.summary.command.BatchSummaryCommand;
 import com.sgm.hansimapi.application.summary.command.SummaryCommand;
+import com.sgm.hansimapi.application.summary.usecase.BatchSummaryUseCase;
 import com.sgm.hansimapi.application.summary.usecase.SummaryUseCase;
-import com.sgm.hansimapi.domain.Summary;
+import com.sgm.hansimapi.domain.summary.BatchSummary;
+import com.sgm.hansimapi.domain.summary.Summary;
+import com.sgm.hansimapi.presentation.dto.request.BatchSummaryRequest;
 import com.sgm.hansimapi.presentation.dto.request.SummaryRequestQuery;
+import com.sgm.hansimapi.presentation.dto.response.BatchSummaryResponse;
 import com.sgm.hansimapi.presentation.dto.response.SummaryResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Summary", description = "한심 지수 조회 API")
 @RestController
@@ -21,8 +24,10 @@ import org.springframework.web.bind.annotation.RestController;
 public class SummaryController {
 
     private final SummaryUseCase summaryUseCase;
+    private final BatchSummaryUseCase batchSummaryUseCase;
 
-    @Operation(summary = "한심 summary 조회", description = "Riot ID 기준으로 지정 기간의 큐별 승패 및 한심 지수를 조회합니다.")
+    @Operation(summary = "단일 소환사 한심 summary 조회",
+               description = "Riot ID 기준으로 지정 기간의 큐별 승패 및 한심 지수를 조회합니다.")
     @GetMapping("/summary/{riotId}")
     public SummaryResponse getSummary(
             @Parameter(
@@ -36,5 +41,18 @@ public class SummaryController {
         SummaryCommand command = SummaryCommand.from(riotId, query);
         Summary summary = summaryUseCase.execute(command);
         return SummaryResponse.from(summary);
+    }
+
+    @Operation(summary = "다중 소환사 한심 summary 조회 (최대 5명)",
+               description = "여러 소환사의 큐별 승패, 랭크 정보, 스트릭, 챔피언 통계를 한 번에 조회합니다. 비로그인/로그인 모두 사용 가능합니다.")
+    @PostMapping("/summary/batch")
+    public BatchSummaryResponse getBatchSummary(@Valid @RequestBody BatchSummaryRequest request) {
+        BatchSummaryCommand command = BatchSummaryCommand.of(
+                request.riotIds(),
+                request.startDate(),
+                request.endDate()
+        );
+        BatchSummary summary = batchSummaryUseCase.execute(command);
+        return BatchSummaryResponse.from(summary);
     }
 }

@@ -1,5 +1,6 @@
-package com.sgm.hansimapi.domain;
+package com.sgm.hansimapi.domain.summary;
 
+import com.sgm.hansimapi.domain.riot.Match;
 import lombok.Getter;
 
 import java.util.List;
@@ -32,5 +33,9 @@ public class QueueStat {
                 .orElse(0.0);
 
         return new QueueStat(games, win, lose, 0, kda);
+    }
+
+    public double getWinRate() {
+        return games == 0 ? 0.0 : (double) win / games * 100.0;
     }
 }

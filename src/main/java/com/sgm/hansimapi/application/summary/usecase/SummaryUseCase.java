@@ -1,9 +1,9 @@
 package com.sgm.hansimapi.application.summary.usecase;
 
 import com.sgm.hansimapi.application.summary.command.SummaryCommand;
-import com.sgm.hansimapi.domain.Match;
-import com.sgm.hansimapi.domain.Summary;
-import com.sgm.hansimapi.domain.riot.client.RiotFetcher;
+import com.sgm.hansimapi.domain.riot.Match;
+import com.sgm.hansimapi.domain.riot.port.RiotFetcher;
+import com.sgm.hansimapi.domain.summary.Summary;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

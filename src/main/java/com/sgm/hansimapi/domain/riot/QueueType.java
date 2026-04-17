@@ -1,4 +1,4 @@
-package com.sgm.hansimapi.domain;
+package com.sgm.hansimapi.domain.riot;
 
 public enum QueueType {
     NORMAL, SOLO, FLEX;

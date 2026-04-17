@@ -1,8 +1,8 @@
 package com.sgm.hansimapi.presentation.dto.response;
 
-import com.sgm.hansimapi.domain.PlayerSummary;
-import com.sgm.hansimapi.domain.QueueStat;
-import com.sgm.hansimapi.domain.Summary;
+import com.sgm.hansimapi.domain.summary.PlayerSummary;
+import com.sgm.hansimapi.domain.summary.QueueStat;
+import com.sgm.hansimapi.domain.summary.Summary;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 

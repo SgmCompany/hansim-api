@@ -1,4 +1,4 @@
-package com.sgm.hansimapi.domain;
+package com.sgm.hansimapi.domain.summary;
 
 import lombok.Getter;
 

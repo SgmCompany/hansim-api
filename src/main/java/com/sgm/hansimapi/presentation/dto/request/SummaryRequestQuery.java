@@ -1,6 +1,6 @@
 package com.sgm.hansimapi.presentation.dto.request;
 
-import com.sgm.hansimapi.domain.TimeWindow;
+import com.sgm.hansimapi.domain.summary.TimeWindow;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Setter;
 
