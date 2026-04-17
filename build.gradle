@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.7'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.springdoc.openapi-gradle-plugin' version '1.9.0'
 }
 
 group = 'com.sgm'
@@ -29,6 +30,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     // lombok
     compileOnly 'org.projectlombok:lombok'
@@ -58,4 +60,11 @@ dependencies {
 }
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+openApi {
+    apiDocsUrl = "http://localhost:8080/v3/api-docs"
+    outputDir   = file("${rootDir}/../hansim-web/openapi")
+    outputFileName = "openapi.json"
+    waitTimeInSeconds = 30
 }

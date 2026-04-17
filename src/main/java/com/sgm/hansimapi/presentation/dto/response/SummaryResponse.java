@@ -3,16 +3,28 @@ package com.sgm.hansimapi.presentation.dto.response;
 import com.sgm.hansimapi.domain.PlayerSummary;
 import com.sgm.hansimapi.domain.QueueStat;
 import com.sgm.hansimapi.domain.Summary;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Getter
+@Schema(description = "한심 summary 조회 응답")
 public class SummaryResponse {
 
+    @Schema(description = "조회 기간 (Unix epoch ms 기준)", requiredMode = Schema.RequiredMode.REQUIRED)
     private final Period period;
+
+    @Schema(
+            description = "조회 기간 문자열 (KST 기준). 예: '2026-04-01 (수) 오전 6시 ~ 2026-04-02 (목) 오전 6시 (KST)'",
+            type = "string",
+            example = "2026-04-01 (수) 오전 6시 ~ 2026-04-02 (목) 오전 6시 (KST)",
+            requiredMode = Schema.RequiredMode.REQUIRED
+    )
     private final String periodStr;
+
+    @Schema(description = "플레이어별 큐 통계 목록", requiredMode = Schema.RequiredMode.REQUIRED)
     private final List<Player> players;
 
     private SummaryResponse(Period period, String periodStr, List<Player> players) {
@@ -32,8 +44,25 @@ public class SummaryResponse {
     }
 
     @Getter
+    @Schema(description = "조회 기간 (ISO-8601 instant 문자열)")
     static class Period {
+
+        @Schema(
+                description = "조회 시작 시각 (ISO-8601)",
+                type = "string",
+                format = "date-time",
+                example = "2026-04-01T21:00:00Z",
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
         private final String start;
+
+        @Schema(
+                description = "조회 종료 시각 (ISO-8601)",
+                type = "string",
+                format = "date-time",
+                example = "2026-04-02T21:00:00Z",
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
         private final String end;
 
         private Period(String start, String end) {
@@ -50,10 +79,24 @@ public class SummaryResponse {
     }
 
     @Getter
+    @Schema(description = "플레이어별 큐 통계")
     static class Player {
+
+        @Schema(
+                description = "플레이어 Riot ID (gameName#tagLine 형식)",
+                type = "string",
+                example = "페이커#KR1",
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
         private final String name;
+
+        @Schema(description = "일반 게임 통계. 해당 기간 내 게임이 없으면 null", nullable = true)
         private final Queue normal;
+
+        @Schema(description = "솔로 랭크 통계. 해당 기간 내 게임이 없으면 null", nullable = true)
         private final Queue solo;
+
+        @Schema(description = "자유 랭크 통계. 해당 기간 내 게임이 없으면 null", nullable = true)
         private final Queue flex;
 
         private Player(String name, Queue normal, Queue solo, Queue flex) {
@@ -74,11 +117,51 @@ public class SummaryResponse {
     }
 
     @Getter
+    @Schema(description = "큐 단위 통계")
     static class Queue {
+
+        @Schema(
+                description = "총 게임 수",
+                type = "integer",
+                minimum = "0",
+                example = "10",
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
         private final int games;
+
+        @Schema(
+                description = "승리 수",
+                type = "integer",
+                minimum = "0",
+                example = "6",
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
         private final int win;
+
+        @Schema(
+                description = "패배 수",
+                type = "integer",
+                minimum = "0",
+                example = "4",
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
         private final int lose;
+
+        @Schema(
+                description = "한심 점수. 점수가 높을수록 한심함",
+                type = "integer",
+                example = "42",
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
         private final int hansimScore;
+
+        @Schema(
+                description = "평균 KDA (소수점 1자리)",
+                type = "string",
+                pattern = "^\\d+\\.\\d$",
+                example = "3.5",
+                requiredMode = Schema.RequiredMode.REQUIRED
+        )
         private final String kda;
 
         private Queue(int games, int win, int lose, int hansimScore, String kda) {
