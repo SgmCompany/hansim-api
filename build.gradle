@@ -3,6 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.5.7'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.springdoc.openapi-gradle-plugin' version '1.9.0'
+    id 'org.hibernate.orm' version '6.6.13.Final'
 }
 
 group = 'com.sgm'
@@ -60,9 +61,18 @@ dependencies {
 
     // rate limiter
     implementation 'com.google.guava:guava:33.4.0-jre'
+
+    // redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+hibernate {
+    enhancement {
+        lazyInitialization = true
+    }
 }
 
 openApi {

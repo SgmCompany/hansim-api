@@ -10,34 +10,42 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 
+/** 사용자 정보 */
 @Entity
 @Table(name = "users")
 @Getter
 @EntityListeners(AuditingEntityListener.class)
 public class UserEntity {
 
+    /** 사용자 고유 식별자 */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** 이메일 주소 */
     @Column(nullable = false, unique = true, length = 255)
     private String email;
 
+    /** 소셜 제공자로부터 발급된 고유 ID (예: Google sub) */
     @Column(name = "social_id", nullable = false, unique = true, length = 100)
     private String socialId;
 
+    /** 소셜 로그인 제공자 유형 (예: GOOGLE) */
     @Enumerated(EnumType.STRING)
     @Column(name = "social_type", nullable = false, length = 20)
     private SocialType socialType;
 
+    /** 탈퇴 처리 시각. NULL이면 정상 회원 (soft delete) */
     @Column(name = "deleted_at", columnDefinition = "TIMESTAMP")
     private Instant deletedAt;
 
+    /** 회원가입 시각 */
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false,
             columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private Instant createdAt;
 
+    /** 최종 수정 시각 */
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false,
             columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP")
