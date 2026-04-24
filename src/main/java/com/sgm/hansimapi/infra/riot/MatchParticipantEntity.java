@@ -55,12 +55,65 @@ public class MatchParticipantEntity {
     @Column(name = "game_start", nullable = false)
     private long gameStart;
 
+    /** 포지션 (TOP/JUNGLE/MID/BOTTOM/UTILITY) */
+    @Column(name = "team_position", length = 10)
+    private String teamPosition;
+
+    /** 미니언 처치 수 */
+    @Column(name = "total_minions_killed", nullable = false)
+    private int totalMinionsKilled;
+
+    /** 중립 몬스터 처치 수 */
+    @Column(name = "neutral_minions_killed", nullable = false)
+    private int neutralMinionsKilled;
+
+    /** 게임 시간 (초) */
+    @Column(name = "game_duration", nullable = false)
+    private int gameDuration;
+
+    /** 챔피언에게 가한 총 피해량 */
+    @Column(name = "total_damage_dealt_to_champions", nullable = false)
+    private int totalDamageDealtToChampions;
+
+    /** 비전 점수 */
+    @Column(name = "vision_score", nullable = false)
+    private int visionScore;
+
+    /** 설치한 와드 수 */
+    @Column(name = "wards_placed", nullable = false)
+    private int wardsPlaced;
+
+    /** 제거한 와드 수 */
+    @Column(name = "wards_killed", nullable = false)
+    private int wardsKilled;
+
+    /** 더블킬 횟수 */
+    @Column(name = "double_kills", nullable = false)
+    private int doubleKills;
+
+    /** 트리플킬 횟수 */
+    @Column(name = "triple_kills", nullable = false)
+    private int tripleKills;
+
+    /** 쿼드라킬 횟수 */
+    @Column(name = "quadra_kills", nullable = false)
+    private int quadraKills;
+
+    /** 펜타킬 횟수 */
+    @Column(name = "penta_kills", nullable = false)
+    private int pentaKills;
+
     protected MatchParticipantEntity() {}
 
     public MatchParticipantEntity(String matchId, String puuid, boolean win,
                                    int kills, int deaths, int assists,
                                    int championId, String championName,
-                                   int queueId, long gameStart) {
+                                   int queueId, long gameStart,
+                                   String teamPosition,
+                                   int totalMinionsKilled, int neutralMinionsKilled, int gameDuration,
+                                   int totalDamageDealtToChampions,
+                                   int visionScore, int wardsPlaced, int wardsKilled,
+                                   int doubleKills, int tripleKills, int quadraKills, int pentaKills) {
         this.matchId      = matchId;
         this.puuid        = puuid;
         this.win          = win;
@@ -71,10 +124,27 @@ public class MatchParticipantEntity {
         this.championName = championName;
         this.queueId      = queueId;
         this.gameStart    = gameStart;
+        this.teamPosition = teamPosition;
+        this.totalMinionsKilled = totalMinionsKilled;
+        this.neutralMinionsKilled = neutralMinionsKilled;
+        this.gameDuration = gameDuration;
+        this.totalDamageDealtToChampions = totalDamageDealtToChampions;
+        this.visionScore  = visionScore;
+        this.wardsPlaced  = wardsPlaced;
+        this.wardsKilled  = wardsKilled;
+        this.doubleKills  = doubleKills;
+        this.tripleKills  = tripleKills;
+        this.quadraKills  = quadraKills;
+        this.pentaKills   = pentaKills;
     }
 
     public Match toDomain() {
         return new Match(win, kills, deaths, assists,
-                QueueType.from(queueId), championId, championName);
+                QueueType.from(queueId), championId, championName,
+                teamPosition,
+                totalMinionsKilled, neutralMinionsKilled, gameDuration,
+                totalDamageDealtToChampions,
+                visionScore, wardsPlaced, wardsKilled,
+                doubleKills, tripleKills, quadraKills, pentaKills);
     }
 }

@@ -220,13 +220,33 @@ public class BatchSummaryResponse {
                 requiredMode = Schema.RequiredMode.REQUIRED)
         private final String kda;
 
-        private QueueInfo(int games, int win, int lose, String winRate, int hansimScore, String kda) {
+        @Schema(description = "분당 평균 CS (소수점 1자리)", example = "6.5",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        private final String avgCsPerMin;
+
+        @Schema(description = "게임당 평균 챔피언 피해량", example = "18500",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        private final int avgDamage;
+
+        @Schema(description = "게임당 평균 비전 점수 (소수점 1자리)", example = "21.3",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        private final String avgVisionScore;
+
+        @Schema(description = "멀티킬 합산 횟수", requiredMode = Schema.RequiredMode.REQUIRED)
+        private final MultiKills multiKills;
+
+        private QueueInfo(int games, int win, int lose, String winRate, int hansimScore, String kda,
+                          String avgCsPerMin, int avgDamage, String avgVisionScore, MultiKills multiKills) {
             this.games = games;
             this.win = win;
             this.lose = lose;
             this.winRate = winRate;
             this.hansimScore = hansimScore;
             this.kda = kda;
+            this.avgCsPerMin = avgCsPerMin;
+            this.avgDamage = avgDamage;
+            this.avgVisionScore = avgVisionScore;
+            this.multiKills = multiKills;
         }
 
         public static QueueInfo from(QueueStat stat) {
@@ -237,8 +257,37 @@ public class BatchSummaryResponse {
                     stat.getLose(),
                     String.format("%.1f", stat.getWinRate()),
                     stat.getHansimScore(),
-                    String.format("%.1f", stat.getKda())
+                    String.format("%.1f", stat.getKda()),
+                    String.format("%.1f", stat.getAvgCsPerMin()),
+                    stat.getAvgDamage(),
+                    String.format("%.1f", stat.getAvgVisionScore()),
+                    new MultiKills(stat.getTotalDoubleKills(), stat.getTotalTripleKills(),
+                            stat.getTotalQuadraKills(), stat.getTotalPentaKills())
             );
+        }
+    }
+
+    @Getter
+    @Schema(description = "멀티킬 합산")
+    public static class MultiKills {
+
+        @Schema(description = "더블킬 횟수", example = "5", requiredMode = Schema.RequiredMode.REQUIRED)
+        private final int doubles;
+
+        @Schema(description = "트리플킬 횟수", example = "2", requiredMode = Schema.RequiredMode.REQUIRED)
+        private final int triples;
+
+        @Schema(description = "쿼드라킬 횟수", example = "1", requiredMode = Schema.RequiredMode.REQUIRED)
+        private final int quadras;
+
+        @Schema(description = "펜타킬 횟수", example = "0", requiredMode = Schema.RequiredMode.REQUIRED)
+        private final int pentas;
+
+        public MultiKills(int doubles, int triples, int quadras, int pentas) {
+            this.doubles = doubles;
+            this.triples = triples;
+            this.quadras = quadras;
+            this.pentas  = pentas;
         }
     }
 
@@ -286,13 +335,19 @@ public class BatchSummaryResponse {
         @Schema(description = "평균 KDA", example = "4.2", requiredMode = Schema.RequiredMode.REQUIRED)
         private final String kda;
 
-        private Champion(int championId, String championName, int games, int wins, String winRate, String kda) {
-            this.championId = championId;
+        @Schema(description = "가장 많이 플레이한 포지션 (TOP/JUNGLE/MID/BOTTOM/UTILITY). 포지션 정보 없으면 null",
+                nullable = true)
+        private final String topPosition;
+
+        private Champion(int championId, String championName, int games, int wins,
+                         String winRate, String kda, String topPosition) {
+            this.championId   = championId;
             this.championName = championName;
-            this.games = games;
-            this.wins = wins;
-            this.winRate = winRate;
-            this.kda = kda;
+            this.games        = games;
+            this.wins         = wins;
+            this.winRate      = winRate;
+            this.kda          = kda;
+            this.topPosition  = topPosition;
         }
 
         public static Champion from(ChampionStat stat) {
@@ -303,7 +358,8 @@ public class BatchSummaryResponse {
                     stat.getGames(),
                     stat.getWins(),
                     String.format("%.1f", wr),
-                    String.format("%.1f", stat.getKda())
+                    String.format("%.1f", stat.getKda()),
+                    stat.getTopPosition()
             );
         }
     }

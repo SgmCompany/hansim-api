@@ -3,6 +3,7 @@ package com.sgm.hansimapi.presentation.dto.response;
 import com.sgm.hansimapi.domain.summary.PlayerSummary;
 import com.sgm.hansimapi.domain.summary.QueueStat;
 import com.sgm.hansimapi.domain.summary.Summary;
+import com.sgm.hansimapi.presentation.dto.response.BatchSummaryResponse.MultiKills;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
@@ -164,12 +165,32 @@ public class SummaryResponse {
         )
         private final String kda;
 
-        private Queue(int games, int win, int lose, int hansimScore, String kda) {
+        @Schema(description = "분당 평균 CS (소수점 1자리)", example = "6.5",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        private final String avgCsPerMin;
+
+        @Schema(description = "게임당 평균 챔피언 피해량", example = "18500",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        private final int avgDamage;
+
+        @Schema(description = "게임당 평균 비전 점수 (소수점 1자리)", example = "21.3",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        private final String avgVisionScore;
+
+        @Schema(description = "멀티킬 합산 횟수", requiredMode = Schema.RequiredMode.REQUIRED)
+        private final MultiKills multiKills;
+
+        private Queue(int games, int win, int lose, int hansimScore, String kda,
+                      String avgCsPerMin, int avgDamage, String avgVisionScore, MultiKills multiKills) {
             this.games = games;
             this.win = win;
             this.lose = lose;
             this.hansimScore = hansimScore;
             this.kda = kda;
+            this.avgCsPerMin = avgCsPerMin;
+            this.avgDamage = avgDamage;
+            this.avgVisionScore = avgVisionScore;
+            this.multiKills = multiKills;
         }
 
         public static Queue from(QueueStat stat) {
@@ -180,7 +201,12 @@ public class SummaryResponse {
                     stat.getWin(),
                     stat.getLose(),
                     stat.getHansimScore(),
-                    String.format("%.1f", stat.getKda())
+                    String.format("%.1f", stat.getKda()),
+                    String.format("%.1f", stat.getAvgCsPerMin()),
+                    stat.getAvgDamage(),
+                    String.format("%.1f", stat.getAvgVisionScore()),
+                    new MultiKills(stat.getTotalDoubleKills(), stat.getTotalTripleKills(),
+                            stat.getTotalQuadraKills(), stat.getTotalPentaKills())
             );
         }
     }

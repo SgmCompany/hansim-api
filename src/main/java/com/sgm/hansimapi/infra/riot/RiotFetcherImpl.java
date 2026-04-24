@@ -242,9 +242,10 @@ public class RiotFetcherImpl implements RiotFetcher {
             Map info = (Map) matchResponse.get("info");
             if (info == null) return;
 
-            int queueId    = ((Number) info.get("queueId")).intValue();
-            long gameStart = ((Number) info.get("gameStartTimestamp")).longValue();
-            String rawJson = objectMapper.writeValueAsString(matchResponse);
+            int queueId      = ((Number) info.get("queueId")).intValue();
+            long gameStart   = ((Number) info.get("gameStartTimestamp")).longValue();
+            int gameDuration = ((Number) info.get("gameDuration")).intValue();
+            String rawJson   = objectMapper.writeValueAsString(matchResponse);
 
             // matches 테이블 저장 (중복이면 skip)
             if (!matchRepo.existsById(matchId)) {
@@ -268,7 +269,19 @@ public class RiotFetcherImpl implements RiotFetcher {
                         ((Number) p.get("assists")).intValue(),
                         ((Number) p.get("championId")).intValue(),
                         (String) p.get("championName"),
-                        queueId, gameStart
+                        queueId, gameStart,
+                        (String) p.get("teamPosition"),
+                        ((Number) p.get("totalMinionsKilled")).intValue(),
+                        ((Number) p.get("neutralMinionsKilled")).intValue(),
+                        gameDuration,
+                        ((Number) p.get("totalDamageDealtToChampions")).intValue(),
+                        ((Number) p.get("visionScore")).intValue(),
+                        ((Number) p.get("wardsPlaced")).intValue(),
+                        ((Number) p.get("wardsKilled")).intValue(),
+                        ((Number) p.get("doubleKills")).intValue(),
+                        ((Number) p.get("tripleKills")).intValue(),
+                        ((Number) p.get("quadraKills")).intValue(),
+                        ((Number) p.get("pentaKills")).intValue()
                 ));
             }
             participantRepo.saveAll(toSave);
@@ -282,7 +295,8 @@ public class RiotFetcherImpl implements RiotFetcher {
         Map info = (Map) matchResponse.get("info");
         if (info == null) return null;
 
-        int queueId = ((Number) info.get("queueId")).intValue();
+        int queueId      = ((Number) info.get("queueId")).intValue();
+        int gameDuration = ((Number) info.get("gameDuration")).intValue();
         QueueType queueType = QueueType.from(queueId);
 
         List participants = (List) info.get("participants");
@@ -296,7 +310,19 @@ public class RiotFetcherImpl implements RiotFetcher {
                         ((Number) p.get("assists")).intValue(),
                         queueType,
                         ((Number) p.get("championId")).intValue(),
-                        (String) p.get("championName")
+                        (String) p.get("championName"),
+                        (String) p.get("teamPosition"),
+                        ((Number) p.get("totalMinionsKilled")).intValue(),
+                        ((Number) p.get("neutralMinionsKilled")).intValue(),
+                        gameDuration,
+                        ((Number) p.get("totalDamageDealtToChampions")).intValue(),
+                        ((Number) p.get("visionScore")).intValue(),
+                        ((Number) p.get("wardsPlaced")).intValue(),
+                        ((Number) p.get("wardsKilled")).intValue(),
+                        ((Number) p.get("doubleKills")).intValue(),
+                        ((Number) p.get("tripleKills")).intValue(),
+                        ((Number) p.get("quadraKills")).intValue(),
+                        ((Number) p.get("pentaKills")).intValue()
                 );
             }
         }
