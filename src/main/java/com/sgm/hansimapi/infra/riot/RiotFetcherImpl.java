@@ -13,14 +13,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -38,6 +43,11 @@ public class RiotFetcherImpl implements RiotFetcher {
     // 안전 마진 포함 7/s 설정
     private final RateLimiter rateLimiter = RateLimiter.create(7.0);
 
+    // [5] 429 공유 백오프: 여러 스레드가 동시에 429를 받을 때 중복 sleep 방지
+    // 값 = 백오프 해제 시각 (System.currentTimeMillis 기준 ms)
+    // 한 스레드가 설정하면 다른 스레드는 해당 시각까지 대기 후 진행
+    private final AtomicLong sharedBackoffUntilMs = new AtomicLong(0);
+
     private static final String ASIA_ENDPOINT = "https://asia.api.riotgames.com";
     private static final String KR_ENDPOINT   = "https://kr.api.riotgames.com";
 
@@ -48,9 +58,11 @@ public class RiotFetcherImpl implements RiotFetcher {
     private static final String LEAGUE_URL       = KR_ENDPOINT + "/lol/league/v4/entries/by-puuid/%s";
 
     // Redis TTL
-    private static final Duration PUUID_TTL   = Duration.ofHours(24);
-    private static final Duration SUMMONER_TTL = Duration.ofHours(1);
-    private static final Duration LEAGUE_TTL  = Duration.ofMinutes(5);
+    private static final Duration PUUID_TTL      = Duration.ofHours(24);
+    private static final Duration SUMMONER_TTL   = Duration.ofHours(1);
+    private static final Duration LEAGUE_TTL     = Duration.ofMinutes(5);
+    // [6] matchId 목록: 짧은 TTL로 캐싱하여 동일 사용자 재조회 시 API 절감
+    private static final Duration MATCH_IDS_TTL  = Duration.ofMinutes(3);
 
     @Value("${riot.api.key}")
     private String apiKey;
@@ -60,11 +72,11 @@ public class RiotFetcherImpl implements RiotFetcher {
                             MatchJpaRepository matchRepo,
                             MatchParticipantJpaRepository participantRepo,
                             ObjectMapper objectMapper) {
-        this.restTemplate   = restTemplate;
-        this.redis          = redis;
-        this.matchRepo      = matchRepo;
+        this.restTemplate    = restTemplate;
+        this.redis           = redis;
+        this.matchRepo       = matchRepo;
         this.participantRepo = participantRepo;
-        this.objectMapper   = objectMapper;
+        this.objectMapper    = objectMapper;
     }
 
     // ── PUUID ──────────────────────────────────────────────────────────────
@@ -198,25 +210,25 @@ public class RiotFetcherImpl implements RiotFetcher {
     @Override
     public List<Match> fetchMatches(String puuid, long start, long end) {
         // 1. DB에서 해당 기간 참가자 레코드 조회
-        List<MatchParticipantEntity> cached =
+        List<MatchParticipantEntity> cachedEntities =
                 participantRepo.findByPuuidAndGameStartBetween(puuid, start, end);
 
-        // 2. Riot API에서 matchId 목록 조회
+        // 2. [6] Redis에서 matchId 목록 조회, miss 시 Riot API 호출
         List<String> allMatchIds = fetchAllMatchIds(puuid, start, end);
 
-        if (allMatchIds.isEmpty() && cached.isEmpty()) return List.of();
+        if (allMatchIds.isEmpty() && cachedEntities.isEmpty()) return List.of();
 
         // 3. DB에 없는 matchId만 API 호출
-        java.util.Set<String> cachedMatchIds = cached.stream()
+        Set<String> cachedMatchIds = cachedEntities.stream()
                 .map(MatchParticipantEntity::getMatchId)
-                .collect(java.util.stream.Collectors.toSet());
+                .collect(Collectors.toSet());
 
         List<String> missingIds = allMatchIds.stream()
                 .filter(id -> !cachedMatchIds.contains(id))
                 .toList();
 
         log.info("[RiotAPI] puuid={} | 전체 matchIds: {}건, DB 캐시: {}건, API 호출: {}건",
-                puuid.substring(0, 8), allMatchIds.size(), cached.size(), missingIds.size());
+                puuid.substring(0, 8), allMatchIds.size(), cachedEntities.size(), missingIds.size());
 
         // 4. 누락된 매치 API 호출 후 DB 저장
         List<Match> freshMatches = new ArrayList<>();
@@ -230,14 +242,18 @@ public class RiotFetcherImpl implements RiotFetcher {
             if (match != null) freshMatches.add(match);
         }
 
-        // 5. DB 캐시 + 신규 결과 합산
+        // 5. DB 캐시 + 신규 결과 합산 후 최신순 정렬 (Streak 계산 기준)
         List<Match> result = new ArrayList<>();
-        cached.stream().map(MatchParticipantEntity::toDomain).forEach(result::add);
+        cachedEntities.stream().map(MatchParticipantEntity::toDomain).forEach(result::add);
         result.addAll(freshMatches);
+        result.sort(Comparator.comparingLong(Match::getGameStart).reversed());
         return result;
     }
 
-    private void saveMatchToDb(String matchId, Map matchResponse) {
+    // [1] 트랜잭션: matches + match_participants를 하나의 트랜잭션으로 묶어 일관성 보장
+    // [2] N+1 개선: existsById 개별 호출 제거 → 배치 조회 후 필터링
+    @Transactional
+    protected void saveMatchToDb(String matchId, Map matchResponse) {
         try {
             Map info = (Map) matchResponse.get("info");
             if (info == null) return;
@@ -252,14 +268,23 @@ public class RiotFetcherImpl implements RiotFetcher {
                 matchRepo.save(new MatchEntity(matchId, queueId, gameStart, rawJson));
             }
 
-            // match_participants 저장
+            // [2] 10명 각각 existsById 대신 배치 조회 → 1 SELECT로 기존 레코드 확인
             List participants = (List) info.get("participants");
+            List<MatchParticipantId> allPids = new ArrayList<>();
+            for (Object obj : participants) {
+                Map p = (Map) obj;
+                allPids.add(new MatchParticipantId(matchId, (String) p.get("puuid")));
+            }
+            Set<MatchParticipantId> existingPids = participantRepo.findAllById(allPids)
+                    .stream()
+                    .map(e -> new MatchParticipantId(e.getMatchId(), e.getPuuid()))
+                    .collect(Collectors.toSet());
+
             List<MatchParticipantEntity> toSave = new ArrayList<>();
             for (Object obj : participants) {
                 Map p = (Map) obj;
                 String pPuuid = (String) p.get("puuid");
-                MatchParticipantId pid = new MatchParticipantId(matchId, pPuuid);
-                if (participantRepo.existsById(pid)) continue;
+                if (existingPids.contains(new MatchParticipantId(matchId, pPuuid))) continue;
 
                 toSave.add(new MatchParticipantEntity(
                         matchId, pPuuid,
@@ -297,6 +322,7 @@ public class RiotFetcherImpl implements RiotFetcher {
 
         int queueId      = ((Number) info.get("queueId")).intValue();
         int gameDuration = ((Number) info.get("gameDuration")).intValue();
+        long gameStart   = ((Number) info.get("gameStartTimestamp")).longValue();
         QueueType queueType = QueueType.from(queueId);
 
         List participants = (List) info.get("participants");
@@ -322,14 +348,30 @@ public class RiotFetcherImpl implements RiotFetcher {
                         ((Number) p.get("doubleKills")).intValue(),
                         ((Number) p.get("tripleKills")).intValue(),
                         ((Number) p.get("quadraKills")).intValue(),
-                        ((Number) p.get("pentaKills")).intValue()
+                        ((Number) p.get("pentaKills")).intValue(),
+                        gameStart
                 );
             }
         }
         return null;
     }
 
+    // [6] matchId 목록 Redis 캐싱 (TTL: 3분)
+    // 동일 사용자 재조회 시 matchId 목록 API 호출을 건너뜀
     private List<String> fetchAllMatchIds(String puuid, long start, long end) {
+        String cacheKey = String.format("matchids:%s:%d:%d", puuid, start / 1000, end / 1000);
+
+        try {
+            String cached = redis.opsForValue().get(cacheKey);
+            if (cached != null) {
+                List<String> ids = objectMapper.readValue(cached, List.class);
+                log.debug("[Redis] matchIds 캐시 hit: puuid={}, {}건", puuid.substring(0, 8), ids.size());
+                return ids;
+            }
+        } catch (Exception e) {
+            log.warn("[Redis] matchIds 조회 실패, API fallback: {}", e.getMessage());
+        }
+
         List<String> allIds = new ArrayList<>();
         int offset = 0;
 
@@ -345,6 +387,12 @@ public class RiotFetcherImpl implements RiotFetcher {
             offset += MATCH_PAGE_SIZE;
         }
 
+        try {
+            redis.opsForValue().set(cacheKey, objectMapper.writeValueAsString(allIds), MATCH_IDS_TTL);
+        } catch (Exception e) {
+            log.warn("[Redis] matchIds 저장 실패: {}", e.getMessage());
+        }
+
         return allIds;
     }
 
@@ -354,6 +402,9 @@ public class RiotFetcherImpl implements RiotFetcher {
 
     private <T> T get(String url, Class<T> responseType) {
         for (int attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+            // [5] 공유 백오프: 다른 스레드가 설정한 backoff 시각까지 대기
+            waitForSharedBackoff();
+
             rateLimiter.acquire();
 
             HttpHeaders headers = new HttpHeaders();
@@ -368,7 +419,13 @@ public class RiotFetcherImpl implements RiotFetcher {
                 long waitSec = retryAfter != null ? Long.parseLong(retryAfter) : 5L;
                 log.warn("[RiotAPI] 429 수신 (attempt {}/{}) | Retry-After: {}s | url: {}",
                         attempt + 1, MAX_RETRIES + 1, waitSec, url.replaceAll("https://[^/]+", ""));
+
                 if (attempt == MAX_RETRIES) throw e;
+
+                // [5] 공유 백오프 시각 설정: 모든 스레드가 이 시각 이후에 재시도
+                long backoffUntil = System.currentTimeMillis() + waitSec * 1000;
+                sharedBackoffUntilMs.updateAndGet(prev -> Math.max(prev, backoffUntil));
+
                 try {
                     TimeUnit.SECONDS.sleep(waitSec);
                 } catch (InterruptedException ie) {
@@ -378,5 +435,18 @@ public class RiotFetcherImpl implements RiotFetcher {
             }
         }
         throw new IllegalStateException("unreachable");
+    }
+
+    private void waitForSharedBackoff() {
+        long backoffUntil = sharedBackoffUntilMs.get();
+        long remaining = backoffUntil - System.currentTimeMillis();
+        if (remaining <= 0) return;
+
+        log.debug("[RiotAPI] 공유 백오프 대기 중: {}ms", remaining);
+        try {
+            TimeUnit.MILLISECONDS.sleep(remaining);
+        } catch (InterruptedException ie) {
+            Thread.currentThread().interrupt();
+        }
     }
 }
