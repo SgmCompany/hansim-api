@@ -37,7 +37,7 @@ public class RiotFetcherImpl implements RiotFetcher {
     private static final String KR_ENDPOINT   = "https://kr.api.riotgames.com";
 
     private static final String ACCOUNT_URL      = ASIA_ENDPOINT + "/riot/account/v1/accounts/by-riot-id/%s/%s";
-    private static final String MATCH_IDS_URL    = ASIA_ENDPOINT + "/lol/match/v5/matches/by-puuid/%s/ids?startTime=%d&endTime=%d&count=100";
+    private static final String MATCH_IDS_URL    = ASIA_ENDPOINT + "/lol/match/v5/matches/by-puuid/%s/ids?startTime=%d&endTime=%d&start=%d&count=100";
     private static final String MATCH_DETAIL_URL = ASIA_ENDPOINT + "/lol/match/v5/matches/%s";
     private static final String SUMMONER_URL     = KR_ENDPOINT + "/lol/summoner/v4/summoners/by-puuid/%s";
     private static final String LEAGUE_URL       = KR_ENDPOINT + "/lol/league/v4/entries/by-puuid/%s";
@@ -100,26 +100,42 @@ public class RiotFetcherImpl implements RiotFetcher {
         return entries;
     }
 
+    private static final int MATCH_PAGE_SIZE = 100;
+
     @Override
     public List<Match> fetchMatches(String puuid, long start, long end) {
-        String url = String.format(MATCH_IDS_URL, puuid, start / 1000, end / 1000);
-        List<String> matchIds = get(url, List.class);
+        List<String> allMatchIds = fetchAllMatchIds(puuid, start, end);
 
-        if (matchIds == null || matchIds.isEmpty()) {
-            return List.of();
-        }
+        if (allMatchIds.isEmpty()) return List.of();
+
+        log.info("[RiotAPI] puuid={} | 총 matchIds: {}건", puuid.substring(0, 8), allMatchIds.size());
 
         List<Match> matches = new ArrayList<>();
-        for (String matchId : matchIds) {
+        for (String matchId : allMatchIds) {
             Map matchResponse = get(String.format(MATCH_DETAIL_URL, matchId), Map.class);
             Match match = convertToMatch(matchResponse, puuid);
+            if (match != null) matches.add(match);
+        }
+        return matches;
+    }
 
-            if (match != null) {
-                matches.add(match);
-            }
+    private List<String> fetchAllMatchIds(String puuid, long start, long end) {
+        List<String> allIds = new ArrayList<>();
+        int offset = 0;
+
+        while (true) {
+            String url = String.format(MATCH_IDS_URL, puuid, start / 1000, end / 1000, offset);
+            List<String> page = get(url, List.class);
+
+            if (page == null || page.isEmpty()) break;
+
+            allIds.addAll(page);
+
+            if (page.size() < MATCH_PAGE_SIZE) break; // 마지막 페이지
+            offset += MATCH_PAGE_SIZE;
         }
 
-        return matches;
+        return allIds;
     }
 
     private static final int MAX_RETRIES = 2;
