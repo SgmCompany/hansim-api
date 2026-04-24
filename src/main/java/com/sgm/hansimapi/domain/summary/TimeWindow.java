@@ -34,8 +34,8 @@ public class TimeWindow {
         if (end.isAfter(LocalDate.now(KST))) {
             throw new IllegalArgumentException("미래 날짜는 조회할 수 없습니다.");
         }
-        if (ChronoUnit.DAYS.between(start, end) > 30) {
-            throw new IllegalArgumentException("최대 30일까지 조회 가능합니다.");
+        if (ChronoUnit.DAYS.between(start, end) > 7) {
+            throw new IllegalArgumentException("최대 7일까지 조회 가능합니다.");
         }
 
         ZonedDateTime startDt = start.atTime(6, 0).atZone(KST);

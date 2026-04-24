@@ -21,7 +21,7 @@ public class SummaryRequestQuery {
     private String startDate;
 
     @Schema(
-            description = "조회 종료일. 미입력 시 오늘(KST)로 설정. startDate 이후여야 하며 최대 30일 범위",
+            description = "조회 종료일. 미입력 시 오늘(KST)로 설정. startDate 이후여야 하며 최대 7일 범위",
             type = "string",
             format = "date",
             pattern = "yyyy-MM-dd",

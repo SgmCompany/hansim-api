@@ -30,7 +30,7 @@ public record BatchSummaryRequest(
         String startDate,
 
         @Schema(
-                description = "조회 종료일 (yyyy-MM-dd). 미입력 시 오늘(KST). 최대 30일 범위",
+                description = "조회 종료일 (yyyy-MM-dd). 미입력 시 오늘(KST). 최대 7일 범위",
                 type = "string",
                 format = "date",
                 example = "2026-04-10",

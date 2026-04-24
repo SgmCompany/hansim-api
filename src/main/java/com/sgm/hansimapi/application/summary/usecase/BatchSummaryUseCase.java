@@ -9,6 +9,7 @@ import com.sgm.hansimapi.domain.riot.port.RiotFetcher;
 import com.sgm.hansimapi.domain.summary.BatchPlayerSummary;
 import com.sgm.hansimapi.domain.summary.BatchSummary;
 import com.sgm.hansimapi.domain.summary.TimeWindow;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
+@Slf4j
 @Service
 public class BatchSummaryUseCase {
 
@@ -37,10 +39,16 @@ public class BatchSummaryUseCase {
                 ))
                 .toList();
 
-        // 전체 완료 대기 후 순서 유지하여 수집
-        List<BatchPlayerSummary> players = futures.stream()
-                .map(CompletableFuture::join)
-                .toList();
+        // 전체 완료 대기 후 순서 유지하여 수집 (하나 실패 시 나머지 취소)
+        List<BatchPlayerSummary> players;
+        try {
+            players = futures.stream()
+                    .map(CompletableFuture::join)
+                    .toList();
+        } catch (Exception e) {
+            futures.forEach(f -> f.cancel(true));
+            throw e;
+        }
 
         return new BatchSummary(command.getTimeWindow(), players);
     }

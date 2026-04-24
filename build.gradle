@@ -57,6 +57,9 @@ dependencies {
 
     // mysql
     implementation 'mysql:mysql-connector-java:8.0.28'
+
+    // rate limiter
+    implementation 'com.google.guava:guava:33.4.0-jre'
 }
 tasks.named('test') {
     useJUnitPlatform()
