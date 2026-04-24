@@ -1,4 +1,4 @@
-package com.sgm.hansimapi.domain.user.client;
+package com.sgm.hansimapi.domain.user.port;
 
 public interface GoogleAuthClient {
 

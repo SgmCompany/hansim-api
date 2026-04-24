@@ -3,6 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.5.7'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'org.springdoc.openapi-gradle-plugin' version '1.9.0'
+    id 'org.hibernate.orm' version '6.6.13.Final'
 }
 
 group = 'com.sgm'
@@ -42,7 +43,7 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
     // Swagger
-    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.6.0'
+    implementation group: 'org.springdoc', name: 'springdoc-openapi-starter-webmvc-ui', version: '2.8.9'
 
     // jwt
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
@@ -57,9 +58,21 @@ dependencies {
 
     // mysql
     implementation 'mysql:mysql-connector-java:8.0.28'
+
+    // rate limiter
+    implementation 'com.google.guava:guava:33.4.0-jre'
+
+    // redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+hibernate {
+    enhancement {
+        lazyInitialization = true
+    }
 }
 
 openApi {

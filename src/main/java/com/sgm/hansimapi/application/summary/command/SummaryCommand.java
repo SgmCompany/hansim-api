@@ -1,6 +1,6 @@
 package com.sgm.hansimapi.application.summary.command;
 
-import com.sgm.hansimapi.domain.TimeWindow;
+import com.sgm.hansimapi.domain.summary.TimeWindow;
 import com.sgm.hansimapi.domain.riot.RiotId;
 import com.sgm.hansimapi.presentation.dto.request.SummaryRequestQuery;
 

@@ -1,6 +1,8 @@
-package com.sgm.hansimapi.domain;
+package com.sgm.hansimapi.domain.summary;
 
 import com.sgm.hansimapi.application.summary.command.SummaryCommand;
+import com.sgm.hansimapi.domain.riot.Match;
+import com.sgm.hansimapi.domain.riot.QueueType;
 
 import java.time.Instant;
 import java.util.List;
@@ -36,8 +38,8 @@ public class Summary {
         return (matches == null || matches.isEmpty()) ? null : QueueStat.from(matches);
     }
 
-    public Instant getStart() { return Instant.ofEpochMilli(timeWindow.getStart()); }
-    public Instant getEnd()   { return Instant.ofEpochMilli(timeWindow.getEnd()); }
-    public String getPeriodStr()          { return timeWindow.getPeriodStr(); }
+    public Instant getStart()               { return Instant.ofEpochMilli(timeWindow.getStart()); }
+    public Instant getEnd()                 { return Instant.ofEpochMilli(timeWindow.getEnd()); }
+    public String getPeriodStr()            { return timeWindow.getPeriodStr(); }
     public List<PlayerSummary> getPlayers() { return players; }
 }

@@ -1,10 +1,10 @@
-package com.sgm.hansimapi.domain.user.client;
+package com.sgm.hansimapi.domain.user.port;
 
 import com.sgm.hansimapi.domain.user.SocialType;
 
 public class GoogleUserInfo {
 
-    private final String socialId;  // Google sub (고유 식별자)
+    private final String socialId;
     private final String email;
     private final SocialType socialType = SocialType.GOOGLE;
 
