@@ -145,6 +145,7 @@ public class MatchParticipantEntity {
                 totalMinionsKilled, neutralMinionsKilled, gameDuration,
                 totalDamageDealtToChampions,
                 visionScore, wardsPlaced, wardsKilled,
-                doubleKills, tripleKills, quadraKills, pentaKills);
+                doubleKills, tripleKills, quadraKills, pentaKills,
+                gameStart);
     }
 }

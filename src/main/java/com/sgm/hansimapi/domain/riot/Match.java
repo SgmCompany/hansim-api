@@ -34,13 +34,17 @@ public class Match {
     private final int quadraKills;
     private final int pentaKills;
 
+    /** 게임 시작 시각 (Unix epoch ms) — Streak 정렬 기준 */
+    private final long gameStart;
+
     public Match(boolean win, int kills, int deaths, int assists,
                  QueueType queueType, int championId, String championName,
                  String teamPosition,
                  int totalMinionsKilled, int neutralMinionsKilled, int gameDuration,
                  int totalDamageDealtToChampions,
                  int visionScore, int wardsPlaced, int wardsKilled,
-                 int doubleKills, int tripleKills, int quadraKills, int pentaKills) {
+                 int doubleKills, int tripleKills, int quadraKills, int pentaKills,
+                 long gameStart) {
         this.win = win;
         this.kills = kills;
         this.deaths = deaths;
@@ -60,6 +64,7 @@ public class Match {
         this.tripleKills = tripleKills;
         this.quadraKills = quadraKills;
         this.pentaKills = pentaKills;
+        this.gameStart = gameStart;
     }
 
     /** 분당 CS = (미니언 + 중립 몬스터) / 게임 시간(분) */
@@ -87,4 +92,5 @@ public class Match {
     public int getTripleKills()                     { return tripleKills; }
     public int getQuadraKills()                     { return quadraKills; }
     public int getPentaKills()                      { return pentaKills; }
+    public long getGameStart()                      { return gameStart; }
 }
