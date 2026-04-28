@@ -22,6 +22,10 @@ public class QueueStat {
     // 비전
     private final double avgVisionScore;
 
+    // 플레이 시간
+    private final int totalPlaySeconds;
+    private final int avgGameDurationSeconds;
+
     // 멀티킬 합산
     private final int totalDoubleKills;
     private final int totalTripleKills;
@@ -30,6 +34,7 @@ public class QueueStat {
 
     public QueueStat(int games, int win, int lose, double kda,
                      double avgCsPerMin, int avgDamage, double avgVisionScore,
+                     int totalPlaySeconds, int avgGameDurationSeconds,
                      int totalDoubleKills, int totalTripleKills, int totalQuadraKills, int totalPentaKills) {
         this.games = games;
         this.win = win;
@@ -38,6 +43,8 @@ public class QueueStat {
         this.avgCsPerMin = avgCsPerMin;
         this.avgDamage = avgDamage;
         this.avgVisionScore = avgVisionScore;
+        this.totalPlaySeconds = totalPlaySeconds;
+        this.avgGameDurationSeconds = avgGameDurationSeconds;
         this.totalDoubleKills = totalDoubleKills;
         this.totalTripleKills = totalTripleKills;
         this.totalQuadraKills = totalQuadraKills;
@@ -69,6 +76,9 @@ public class QueueStat {
                 .average()
                 .orElse(0.0);
 
+        int totalPlaySeconds        = matches.stream().mapToInt(Match::getGameDuration).sum();
+        int avgGameDurationSeconds  = games == 0 ? 0 : totalPlaySeconds / games;
+
         int totalDoubleKills = matches.stream().mapToInt(Match::getDoubleKills).sum();
         int totalTripleKills = matches.stream().mapToInt(Match::getTripleKills).sum();
         int totalQuadraKills = matches.stream().mapToInt(Match::getQuadraKills).sum();
@@ -76,6 +86,7 @@ public class QueueStat {
 
         return new QueueStat(games, win, lose, kda,
                 avgCsPerMin, avgDamage, avgVisionScore,
+                totalPlaySeconds, avgGameDurationSeconds,
                 totalDoubleKills, totalTripleKills, totalQuadraKills, totalPentaKills);
     }
 

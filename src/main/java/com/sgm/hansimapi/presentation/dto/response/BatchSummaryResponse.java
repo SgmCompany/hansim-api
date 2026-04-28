@@ -92,12 +92,17 @@ public class BatchSummaryResponse {
         @Schema(description = "조회 기간 내 챔피언별 통계 (게임 수 내림차순)", requiredMode = Schema.RequiredMode.REQUIRED)
         private final List<Champion> topChampions;
 
+        @Schema(description = "전체 큐 합산 총 플레이 시간 (초)", example = "10800",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        private final int totalPlaySeconds;
+
         @Schema(description = "한심지수 (NINE_TO_SIX 기준)", requiredMode = Schema.RequiredMode.REQUIRED)
         private final HlsResponse hls;
 
         private Player(String riotId, int profileIconId, long summonerLevel,
                        RankInfo soloRank, RankInfo flexRank, Queues queues,
-                       StreakInfo streak, List<Champion> topChampions, HlsResponse hls) {
+                       StreakInfo streak, List<Champion> topChampions,
+                       int totalPlaySeconds, HlsResponse hls) {
             this.riotId = riotId;
             this.profileIconId = profileIconId;
             this.summonerLevel = summonerLevel;
@@ -106,6 +111,7 @@ public class BatchSummaryResponse {
             this.queues = queues;
             this.streak = streak;
             this.topChampions = topChampions;
+            this.totalPlaySeconds = totalPlaySeconds;
             this.hls = hls;
         }
 
@@ -119,6 +125,7 @@ public class BatchSummaryResponse {
                     Queues.from(p),
                     StreakInfo.from(p.getStreak()),
                     p.getTopChampions().stream().map(Champion::from).toList(),
+                    p.getTotalPlaySeconds(),
                     HlsResponse.from(p.getHls())
             );
         }
@@ -227,6 +234,14 @@ public class BatchSummaryResponse {
                 requiredMode = Schema.RequiredMode.REQUIRED)
         private final String kda;
 
+        @Schema(description = "큐 총 플레이 시간 (초)", example = "7200",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        private final int totalPlaySeconds;
+
+        @Schema(description = "판당 평균 게임 시간 (초)", example = "1800",
+                requiredMode = Schema.RequiredMode.REQUIRED)
+        private final int avgGameDurationSeconds;
+
         @Schema(description = "분당 평균 CS (소수점 1자리)", example = "6.5",
                 requiredMode = Schema.RequiredMode.REQUIRED)
         private final String avgCsPerMin;
@@ -243,12 +258,15 @@ public class BatchSummaryResponse {
         private final MultiKills multiKills;
 
         private QueueInfo(int games, int win, int lose, String winRate, String kda,
+                          int totalPlaySeconds, int avgGameDurationSeconds,
                           String avgCsPerMin, int avgDamage, String avgVisionScore, MultiKills multiKills) {
             this.games = games;
             this.win = win;
             this.lose = lose;
             this.winRate = winRate;
             this.kda = kda;
+            this.totalPlaySeconds = totalPlaySeconds;
+            this.avgGameDurationSeconds = avgGameDurationSeconds;
             this.avgCsPerMin = avgCsPerMin;
             this.avgDamage = avgDamage;
             this.avgVisionScore = avgVisionScore;
@@ -263,6 +281,8 @@ public class BatchSummaryResponse {
                     stat.getLose(),
                     String.format("%.1f", stat.getWinRate()),
                     String.format("%.1f", stat.getKda()),
+                    stat.getTotalPlaySeconds(),
+                    stat.getAvgGameDurationSeconds(),
                     String.format("%.1f", stat.getAvgCsPerMin()),
                     stat.getAvgDamage(),
                     String.format("%.1f", stat.getAvgVisionScore()),

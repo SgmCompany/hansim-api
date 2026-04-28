@@ -22,9 +22,13 @@ public class BatchPlayerSummary {
     private final List<ChampionStat> topChampions;
     private final HlsResult hls;
 
+    /** 전체 큐 합산 총 플레이 시간 (초) — 최저시급 환산 등에 활용 */
+    private final int totalPlaySeconds;
+
     private BatchPlayerSummary(String riotId, SummonerInfo summonerInfo, List<LeagueEntry> leagueEntries,
                                 QueueStat normal, QueueStat solo, QueueStat flex, QueueStat aram,
-                                Streak streak, List<ChampionStat> topChampions, HlsResult hls) {
+                                Streak streak, List<ChampionStat> topChampions, HlsResult hls,
+                                int totalPlaySeconds) {
         this.riotId = riotId;
         this.summonerInfo = summonerInfo;
         this.leagueEntries = leagueEntries;
@@ -35,6 +39,7 @@ public class BatchPlayerSummary {
         this.streak = streak;
         this.topChampions = topChampions;
         this.hls = hls;
+        this.totalPlaySeconds = totalPlaySeconds;
     }
 
     public static BatchPlayerSummary from(String riotId, SummonerInfo summonerInfo,
@@ -50,8 +55,9 @@ public class BatchPlayerSummary {
         Streak streak = Streak.from(matches);
         List<ChampionStat> topChampions = ChampionStat.topFrom(matches);
         HlsResult hls = HlsCalculator.calculate(matches);
+        int totalPlaySeconds = matches.stream().mapToInt(Match::getGameDuration).sum();
 
-        return new BatchPlayerSummary(riotId, summonerInfo, leagueEntries, normal, solo, flex, aram, streak, topChampions, hls);
+        return new BatchPlayerSummary(riotId, summonerInfo, leagueEntries, normal, solo, flex, aram, streak, topChampions, hls, totalPlaySeconds);
     }
 
     private static QueueStat toStatOrNull(Map<QueueType, List<Match>> byQueue, QueueType type) {
@@ -76,4 +82,5 @@ public class BatchPlayerSummary {
     public Streak getStreak()                     { return streak; }
     public List<ChampionStat> getTopChampions()  { return topChampions; }
     public HlsResult getHls()                    { return hls; }
+    public int getTotalPlaySeconds()             { return totalPlaySeconds; }
 }

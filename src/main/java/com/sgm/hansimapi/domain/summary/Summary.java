@@ -31,8 +31,10 @@ public class Summary {
         // HLS는 모든 큐(노말/솔로/자유/칼바람) 매치를 합산하여 계산
         HlsResult hls = HlsCalculator.calculate(matches);
 
+        int totalPlaySeconds = matches.stream().mapToInt(Match::getGameDuration).sum();
+
         String playerName = command.getGameName() + "#" + command.getTagLine();
-        PlayerSummary player = new PlayerSummary(playerName, normal, solo, flex, aram, hls);
+        PlayerSummary player = new PlayerSummary(playerName, normal, solo, flex, aram, hls, totalPlaySeconds);
 
         return new Summary(command.getTimeWindow(), List.of(player));
     }
