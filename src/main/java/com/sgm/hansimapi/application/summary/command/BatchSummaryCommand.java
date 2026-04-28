@@ -17,6 +17,8 @@ public class BatchSummaryCommand {
 
     public static BatchSummaryCommand of(List<String> riotIdSlugs, String startDate, String endDate) {
         List<RiotId> riotIds = riotIdSlugs.stream()
+                .map(String::toLowerCase)
+                .distinct()
                 .map(RiotId::from)
                 .toList();
         TimeWindow timeWindow = TimeWindow.from(startDate, endDate);
