@@ -43,7 +43,7 @@ public class SummaryController {
         return SummaryResponse.from(summary);
     }
 
-    @Operation(summary = "다중 소환사 한심 summary 조회 (최대 5명)",
+    @Operation(summary = "다중 소환사 한심 summary 조회 (최대 10명)",
                description = "여러 소환사의 큐별 승패, 랭크 정보, 스트릭, 챔피언 통계를 한 번에 조회합니다. 비로그인/로그인 모두 사용 가능합니다.")
     @PostMapping("/summary/batch")
     public BatchSummaryResponse getBatchSummary(@Valid @RequestBody BatchSummaryRequest request) {

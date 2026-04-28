@@ -11,12 +11,12 @@ import java.util.List;
 public record BatchSummaryRequest(
 
         @Schema(
-                description = "조회할 Riot ID 목록. '이름#태그' 또는 '이름-태그' 형식 모두 허용. 최소 1명 최대 5명",
+                description = "조회할 Riot ID 목록. '이름#태그' 또는 '이름-태그' 형식 모두 허용. 최소 1명 최대 10명",
                 example = "[\"페이커#KR1\", \"카나비#KR1\"]",
                 requiredMode = Schema.RequiredMode.REQUIRED
         )
         @NotEmpty
-        @Size(min = 1, max = 5, message = "소환사는 1명 이상 5명 이하로 입력해주세요.")
+        @Size(min = 1, max = 10, message = "소환사는 1명 이상 10명 이하로 입력해주세요.")
         List<@NotBlank(message = "Riot ID는 공백일 수 없습니다.") String> riotIds,
 
         @Schema(

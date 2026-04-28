@@ -21,13 +21,13 @@ public class RestTemplateConfig {
 
     /**
      * 배치 소환사 조회용 스레드 풀.
-     * 소환사 최대 5명을 동시에 처리하므로 corePoolSize를 5로 설정합니다.
+     * 소환사 최대 10명을 동시에 처리하므로 corePoolSize를 10으로 설정합니다.
      */
     @Bean
     public Executor batchExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-        executor.setCorePoolSize(5);
-        executor.setMaxPoolSize(5);
+        executor.setCorePoolSize(10);
+        executor.setMaxPoolSize(10);
         executor.setQueueCapacity(50);
         executor.setThreadNamePrefix("batch-riot-");
         executor.initialize();
