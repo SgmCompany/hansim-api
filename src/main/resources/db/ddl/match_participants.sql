@@ -22,6 +22,8 @@ CREATE TABLE match_participants
     triple_kills                    INT          NOT NULL DEFAULT 0 COMMENT '트리플킬 횟수',
     quadra_kills                    INT          NOT NULL DEFAULT 0 COMMENT '쿼드라킬 횟수',
     penta_kills                     INT          NOT NULL DEFAULT 0 COMMENT '펜타킬 횟수',
+    game_ended_in_surrender         TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '일반 서렌 종료 여부',
+    game_ended_in_early_surrender   TINYINT(1)   NOT NULL DEFAULT 0 COMMENT '20분 이전 얼리 서렌 여부',
     PRIMARY KEY (match_id, puuid),
     INDEX idx_puuid_game_start (puuid, game_start)
 ) COMMENT = '매치 참가자별 파싱된 통계';

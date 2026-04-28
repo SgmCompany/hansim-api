@@ -3,7 +3,6 @@ package com.sgm.hansimapi.presentation.dto.response;
 import com.sgm.hansimapi.domain.summary.PlayerSummary;
 import com.sgm.hansimapi.domain.summary.QueueStat;
 import com.sgm.hansimapi.domain.summary.Summary;
-import com.sgm.hansimapi.presentation.dto.response.BatchSummaryResponse.MultiKills;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 
@@ -100,11 +99,19 @@ public class SummaryResponse {
         @Schema(description = "자유 랭크 통계. 해당 기간 내 게임이 없으면 null", nullable = true)
         private final Queue flex;
 
-        private Player(String name, Queue normal, Queue solo, Queue flex) {
-            this.name = name;
+        @Schema(description = "칼바람 나락 통계. 해당 기간 내 게임이 없으면 null", nullable = true)
+        private final Queue aram;
+
+        @Schema(description = "한심지수 (NINE_TO_SIX 기준)", requiredMode = Schema.RequiredMode.REQUIRED)
+        private final HlsResponse hls;
+
+        private Player(String name, Queue normal, Queue solo, Queue flex, Queue aram, HlsResponse hls) {
+            this.name   = name;
             this.normal = normal;
-            this.solo = solo;
-            this.flex = flex;
+            this.solo   = solo;
+            this.flex   = flex;
+            this.aram   = aram;
+            this.hls    = hls;
         }
 
         public static Player from(PlayerSummary player) {
@@ -112,7 +119,9 @@ public class SummaryResponse {
                     player.getName(),
                     Queue.from(player.getNormal()),
                     Queue.from(player.getSolo()),
-                    Queue.from(player.getFlex())
+                    Queue.from(player.getFlex()),
+                    Queue.from(player.getAram()),
+                    HlsResponse.from(player.getHls())
             );
         }
     }
@@ -149,14 +158,6 @@ public class SummaryResponse {
         private final int lose;
 
         @Schema(
-                description = "한심 점수. 점수가 높을수록 한심함",
-                type = "integer",
-                example = "42",
-                requiredMode = Schema.RequiredMode.REQUIRED
-        )
-        private final int hansimScore;
-
-        @Schema(
                 description = "평균 KDA (소수점 1자리)",
                 type = "string",
                 pattern = "^\\d+\\.\\d$",
@@ -180,12 +181,11 @@ public class SummaryResponse {
         @Schema(description = "멀티킬 합산 횟수", requiredMode = Schema.RequiredMode.REQUIRED)
         private final MultiKills multiKills;
 
-        private Queue(int games, int win, int lose, int hansimScore, String kda,
+        private Queue(int games, int win, int lose, String kda,
                       String avgCsPerMin, int avgDamage, String avgVisionScore, MultiKills multiKills) {
             this.games = games;
             this.win = win;
             this.lose = lose;
-            this.hansimScore = hansimScore;
             this.kda = kda;
             this.avgCsPerMin = avgCsPerMin;
             this.avgDamage = avgDamage;
@@ -193,14 +193,13 @@ public class SummaryResponse {
             this.multiKills = multiKills;
         }
 
-        public static Queue from(QueueStat stat) {
+        static Queue from(QueueStat stat) {
             if (stat == null) return null;
 
             return new Queue(
                     stat.getGames(),
                     stat.getWin(),
                     stat.getLose(),
-                    stat.getHansimScore(),
                     String.format("%.1f", stat.getKda()),
                     String.format("%.1f", stat.getAvgCsPerMin()),
                     stat.getAvgDamage(),
@@ -208,6 +207,30 @@ public class SummaryResponse {
                     new MultiKills(stat.getTotalDoubleKills(), stat.getTotalTripleKills(),
                             stat.getTotalQuadraKills(), stat.getTotalPentaKills())
             );
+        }
+    }
+
+    @Getter
+    @Schema(description = "멀티킬 합산 횟수")
+    static class MultiKills {
+
+        @Schema(description = "더블킬 횟수", example = "3")
+        private final int doubles;
+
+        @Schema(description = "트리플킬 횟수", example = "1")
+        private final int triples;
+
+        @Schema(description = "쿼드라킬 횟수", example = "0")
+        private final int quadras;
+
+        @Schema(description = "펜타킬 횟수", example = "0")
+        private final int pentas;
+
+        MultiKills(int doubles, int triples, int quadras, int pentas) {
+            this.doubles = doubles;
+            this.triples = triples;
+            this.quadras = quadras;
+            this.pentas  = pentas;
         }
     }
 }

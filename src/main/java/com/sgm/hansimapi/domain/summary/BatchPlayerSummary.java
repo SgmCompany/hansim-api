@@ -17,20 +17,24 @@ public class BatchPlayerSummary {
     private final QueueStat normal;
     private final QueueStat solo;
     private final QueueStat flex;
+    private final QueueStat aram;
     private final Streak streak;
     private final List<ChampionStat> topChampions;
+    private final HlsResult hls;
 
     private BatchPlayerSummary(String riotId, SummonerInfo summonerInfo, List<LeagueEntry> leagueEntries,
-                                QueueStat normal, QueueStat solo, QueueStat flex,
-                                Streak streak, List<ChampionStat> topChampions) {
+                                QueueStat normal, QueueStat solo, QueueStat flex, QueueStat aram,
+                                Streak streak, List<ChampionStat> topChampions, HlsResult hls) {
         this.riotId = riotId;
         this.summonerInfo = summonerInfo;
         this.leagueEntries = leagueEntries;
         this.normal = normal;
         this.solo = solo;
         this.flex = flex;
+        this.aram = aram;
         this.streak = streak;
         this.topChampions = topChampions;
+        this.hls = hls;
     }
 
     public static BatchPlayerSummary from(String riotId, SummonerInfo summonerInfo,
@@ -41,11 +45,13 @@ public class BatchPlayerSummary {
         QueueStat normal = toStatOrNull(byQueue, QueueType.NORMAL);
         QueueStat solo   = toStatOrNull(byQueue, QueueType.SOLO);
         QueueStat flex   = toStatOrNull(byQueue, QueueType.FLEX);
+        QueueStat aram   = toStatOrNull(byQueue, QueueType.ARAM);
 
         Streak streak = Streak.from(matches);
         List<ChampionStat> topChampions = ChampionStat.topFrom(matches);
+        HlsResult hls = HlsCalculator.calculate(matches);
 
-        return new BatchPlayerSummary(riotId, summonerInfo, leagueEntries, normal, solo, flex, streak, topChampions);
+        return new BatchPlayerSummary(riotId, summonerInfo, leagueEntries, normal, solo, flex, aram, streak, topChampions, hls);
     }
 
     private static QueueStat toStatOrNull(Map<QueueType, List<Match>> byQueue, QueueType type) {
@@ -66,6 +72,8 @@ public class BatchPlayerSummary {
     public QueueStat getNormal()                  { return normal; }
     public QueueStat getSolo()                    { return solo; }
     public QueueStat getFlex()                    { return flex; }
+    public QueueStat getAram()                    { return aram; }
     public Streak getStreak()                     { return streak; }
     public List<ChampionStat> getTopChampions()  { return topChampions; }
+    public HlsResult getHls()                    { return hls; }
 }

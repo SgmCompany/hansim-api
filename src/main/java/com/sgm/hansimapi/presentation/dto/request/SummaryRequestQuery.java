@@ -13,7 +13,7 @@ public class SummaryRequestQuery {
             description = "조회 시작일. 미입력 시 오늘(KST)로 설정",
             type = "string",
             format = "date",
-            pattern = "yyyy-MM-dd",
+            pattern = "^\\d{4}-\\d{2}-\\d{2}$",
             example = "2026-04-01",
             nullable = true,
             requiredMode = Schema.RequiredMode.NOT_REQUIRED
@@ -24,7 +24,7 @@ public class SummaryRequestQuery {
             description = "조회 종료일. 미입력 시 오늘(KST)로 설정. startDate 이후여야 하며 최대 7일 범위",
             type = "string",
             format = "date",
-            pattern = "yyyy-MM-dd",
+            pattern = "^\\d{4}-\\d{2}-\\d{2}$",
             example = "2026-04-10",
             nullable = true,
             requiredMode = Schema.RequiredMode.NOT_REQUIRED

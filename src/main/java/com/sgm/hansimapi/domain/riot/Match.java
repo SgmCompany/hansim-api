@@ -37,6 +37,12 @@ public class Match {
     /** 게임 시작 시각 (Unix epoch ms) — Streak 정렬 기준 */
     private final long gameStart;
 
+    /** 일반 서렌 종료 여부 — HLS 결과 가중치에 사용 */
+    private final boolean gameEndedInSurrender;
+
+    /** 20분 이전 얼리 서렌 여부 — HLS 결과 가중치에 사용 */
+    private final boolean gameEndedInEarlySurrender;
+
     public Match(boolean win, int kills, int deaths, int assists,
                  QueueType queueType, int championId, String championName,
                  String teamPosition,
@@ -44,7 +50,8 @@ public class Match {
                  int totalDamageDealtToChampions,
                  int visionScore, int wardsPlaced, int wardsKilled,
                  int doubleKills, int tripleKills, int quadraKills, int pentaKills,
-                 long gameStart) {
+                 long gameStart,
+                 boolean gameEndedInSurrender, boolean gameEndedInEarlySurrender) {
         this.win = win;
         this.kills = kills;
         this.deaths = deaths;
@@ -65,6 +72,8 @@ public class Match {
         this.quadraKills = quadraKills;
         this.pentaKills = pentaKills;
         this.gameStart = gameStart;
+        this.gameEndedInSurrender = gameEndedInSurrender;
+        this.gameEndedInEarlySurrender = gameEndedInEarlySurrender;
     }
 
     /** 분당 CS = (미니언 + 중립 몬스터) / 게임 시간(분) */
@@ -93,4 +102,6 @@ public class Match {
     public int getQuadraKills()                     { return quadraKills; }
     public int getPentaKills()                      { return pentaKills; }
     public long getGameStart()                      { return gameStart; }
+    public boolean isGameEndedInSurrender()         { return gameEndedInSurrender; }
+    public boolean isGameEndedInEarlySurrender()    { return gameEndedInEarlySurrender; }
 }
