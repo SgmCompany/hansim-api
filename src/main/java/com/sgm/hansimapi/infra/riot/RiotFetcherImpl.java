@@ -306,7 +306,9 @@ public class RiotFetcherImpl implements RiotFetcher {
                         ((Number) p.get("doubleKills")).intValue(),
                         ((Number) p.get("tripleKills")).intValue(),
                         ((Number) p.get("quadraKills")).intValue(),
-                        ((Number) p.get("pentaKills")).intValue()
+                        ((Number) p.get("pentaKills")).intValue(),
+                        Boolean.TRUE.equals(p.get("gameEndedInSurrender")),
+                        Boolean.TRUE.equals(p.get("gameEndedInEarlySurrender"))
                 ));
             }
             participantRepo.saveAll(toSave);
@@ -349,7 +351,9 @@ public class RiotFetcherImpl implements RiotFetcher {
                         ((Number) p.get("tripleKills")).intValue(),
                         ((Number) p.get("quadraKills")).intValue(),
                         ((Number) p.get("pentaKills")).intValue(),
-                        gameStart
+                        gameStart,
+                        Boolean.TRUE.equals(p.get("gameEndedInSurrender")),
+                        Boolean.TRUE.equals(p.get("gameEndedInEarlySurrender"))
                 );
             }
         }

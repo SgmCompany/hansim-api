@@ -103,6 +103,14 @@ public class MatchParticipantEntity {
     @Column(name = "penta_kills", nullable = false)
     private int pentaKills;
 
+    /** 일반 서렌 종료 여부 */
+    @Column(name = "game_ended_in_surrender", nullable = false)
+    private boolean gameEndedInSurrender;
+
+    /** 20분 이전 얼리 서렌 여부 */
+    @Column(name = "game_ended_in_early_surrender", nullable = false)
+    private boolean gameEndedInEarlySurrender;
+
     protected MatchParticipantEntity() {}
 
     public MatchParticipantEntity(String matchId, String puuid, boolean win,
@@ -113,7 +121,8 @@ public class MatchParticipantEntity {
                                    int totalMinionsKilled, int neutralMinionsKilled, int gameDuration,
                                    int totalDamageDealtToChampions,
                                    int visionScore, int wardsPlaced, int wardsKilled,
-                                   int doubleKills, int tripleKills, int quadraKills, int pentaKills) {
+                                   int doubleKills, int tripleKills, int quadraKills, int pentaKills,
+                                   boolean gameEndedInSurrender, boolean gameEndedInEarlySurrender) {
         this.matchId      = matchId;
         this.puuid        = puuid;
         this.win          = win;
@@ -136,6 +145,8 @@ public class MatchParticipantEntity {
         this.tripleKills  = tripleKills;
         this.quadraKills  = quadraKills;
         this.pentaKills   = pentaKills;
+        this.gameEndedInSurrender      = gameEndedInSurrender;
+        this.gameEndedInEarlySurrender = gameEndedInEarlySurrender;
     }
 
     public Match toDomain() {
@@ -146,6 +157,7 @@ public class MatchParticipantEntity {
                 totalDamageDealtToChampions,
                 visionScore, wardsPlaced, wardsKilled,
                 doubleKills, tripleKills, quadraKills, pentaKills,
-                gameStart);
+                gameStart,
+                gameEndedInSurrender, gameEndedInEarlySurrender);
     }
 }

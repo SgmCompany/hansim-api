@@ -11,7 +11,6 @@ public class QueueStat {
     private final int games;
     private final int win;
     private final int lose;
-    private final int hansimScore;
     private final double kda;
 
     // CS
@@ -29,13 +28,12 @@ public class QueueStat {
     private final int totalQuadraKills;
     private final int totalPentaKills;
 
-    public QueueStat(int games, int win, int lose, int hansimScore, double kda,
+    public QueueStat(int games, int win, int lose, double kda,
                      double avgCsPerMin, int avgDamage, double avgVisionScore,
                      int totalDoubleKills, int totalTripleKills, int totalQuadraKills, int totalPentaKills) {
         this.games = games;
         this.win = win;
         this.lose = lose;
-        this.hansimScore = hansimScore;
         this.kda = kda;
         this.avgCsPerMin = avgCsPerMin;
         this.avgDamage = avgDamage;
@@ -76,7 +74,7 @@ public class QueueStat {
         int totalQuadraKills = matches.stream().mapToInt(Match::getQuadraKills).sum();
         int totalPentaKills  = matches.stream().mapToInt(Match::getPentaKills).sum();
 
-        return new QueueStat(games, win, lose, 0, kda,
+        return new QueueStat(games, win, lose, kda,
                 avgCsPerMin, avgDamage, avgVisionScore,
                 totalDoubleKills, totalTripleKills, totalQuadraKills, totalPentaKills);
     }

@@ -92,9 +92,12 @@ public class BatchSummaryResponse {
         @Schema(description = "조회 기간 내 챔피언별 통계 (게임 수 내림차순)", requiredMode = Schema.RequiredMode.REQUIRED)
         private final List<Champion> topChampions;
 
+        @Schema(description = "한심지수 (NINE_TO_SIX 기준)", requiredMode = Schema.RequiredMode.REQUIRED)
+        private final HlsResponse hls;
+
         private Player(String riotId, int profileIconId, long summonerLevel,
                        RankInfo soloRank, RankInfo flexRank, Queues queues,
-                       StreakInfo streak, List<Champion> topChampions) {
+                       StreakInfo streak, List<Champion> topChampions, HlsResponse hls) {
             this.riotId = riotId;
             this.profileIconId = profileIconId;
             this.summonerLevel = summonerLevel;
@@ -103,6 +106,7 @@ public class BatchSummaryResponse {
             this.queues = queues;
             this.streak = streak;
             this.topChampions = topChampions;
+            this.hls = hls;
         }
 
         public static Player from(BatchPlayerSummary p) {
@@ -114,7 +118,8 @@ public class BatchSummaryResponse {
                     RankInfo.from(p.getLeagueEntry(QueueType.FLEX)),
                     Queues.from(p),
                     StreakInfo.from(p.getStreak()),
-                    p.getTopChampions().stream().map(Champion::from).toList()
+                    p.getTopChampions().stream().map(Champion::from).toList(),
+                    HlsResponse.from(p.getHls())
             );
         }
     }
@@ -182,17 +187,22 @@ public class BatchSummaryResponse {
         @Schema(description = "자유 랭크. 해당 기간 게임 없으면 null", nullable = true)
         private final QueueInfo flex;
 
-        private Queues(QueueInfo normal, QueueInfo solo, QueueInfo flex) {
+        @Schema(description = "칼바람 나락. 해당 기간 게임 없으면 null", nullable = true)
+        private final QueueInfo aram;
+
+        private Queues(QueueInfo normal, QueueInfo solo, QueueInfo flex, QueueInfo aram) {
             this.normal = normal;
             this.solo = solo;
             this.flex = flex;
+            this.aram = aram;
         }
 
         public static Queues from(BatchPlayerSummary p) {
             return new Queues(
                     QueueInfo.from(p.getNormal()),
                     QueueInfo.from(p.getSolo()),
-                    QueueInfo.from(p.getFlex())
+                    QueueInfo.from(p.getFlex()),
+                    QueueInfo.from(p.getAram())
             );
         }
     }
@@ -213,9 +223,6 @@ public class BatchSummaryResponse {
         @Schema(description = "승률 (%)", example = "60.0", requiredMode = Schema.RequiredMode.REQUIRED)
         private final String winRate;
 
-        @Schema(description = "한심 점수", example = "42", requiredMode = Schema.RequiredMode.REQUIRED)
-        private final int hansimScore;
-
         @Schema(description = "평균 KDA (소수점 1자리)", example = "3.5",
                 requiredMode = Schema.RequiredMode.REQUIRED)
         private final String kda;
@@ -235,13 +242,12 @@ public class BatchSummaryResponse {
         @Schema(description = "멀티킬 합산 횟수", requiredMode = Schema.RequiredMode.REQUIRED)
         private final MultiKills multiKills;
 
-        private QueueInfo(int games, int win, int lose, String winRate, int hansimScore, String kda,
+        private QueueInfo(int games, int win, int lose, String winRate, String kda,
                           String avgCsPerMin, int avgDamage, String avgVisionScore, MultiKills multiKills) {
             this.games = games;
             this.win = win;
             this.lose = lose;
             this.winRate = winRate;
-            this.hansimScore = hansimScore;
             this.kda = kda;
             this.avgCsPerMin = avgCsPerMin;
             this.avgDamage = avgDamage;
@@ -256,7 +262,6 @@ public class BatchSummaryResponse {
                     stat.getWin(),
                     stat.getLose(),
                     String.format("%.1f", stat.getWinRate()),
-                    stat.getHansimScore(),
                     String.format("%.1f", stat.getKda()),
                     String.format("%.1f", stat.getAvgCsPerMin()),
                     stat.getAvgDamage(),
@@ -363,4 +368,5 @@ public class BatchSummaryResponse {
             );
         }
     }
+
 }

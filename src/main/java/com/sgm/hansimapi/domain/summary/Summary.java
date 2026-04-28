@@ -26,9 +26,13 @@ public class Summary {
         QueueStat normal = toStatOrNull(byQueue, QueueType.NORMAL);
         QueueStat solo   = toStatOrNull(byQueue, QueueType.SOLO);
         QueueStat flex   = toStatOrNull(byQueue, QueueType.FLEX);
+        QueueStat aram   = toStatOrNull(byQueue, QueueType.ARAM);
+
+        // HLS는 모든 큐(노말/솔로/자유/칼바람) 매치를 합산하여 계산
+        HlsResult hls = HlsCalculator.calculate(matches);
 
         String playerName = command.getGameName() + "#" + command.getTagLine();
-        PlayerSummary player = new PlayerSummary(playerName, normal, solo, flex);
+        PlayerSummary player = new PlayerSummary(playerName, normal, solo, flex, aram, hls);
 
         return new Summary(command.getTimeWindow(), List.of(player));
     }

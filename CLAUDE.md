@@ -64,3 +64,76 @@ presentation → application → domain ← infra
 - `RiotFetcher` 인터페이스는 `domain` 레이어에, 구현체 `RiotFetcherImpl`은 `infra` 레이어에 위치합니다 (의존성 역전).
 - Riot API는 `asia.api.riotgames.com` 엔드포인트를 사용합니다.
 - QueryDSL APT가 적용되어 있습니다. 엔티티 변경 후에는 `./gradlew compileJava`로 Q클래스를 재생성하세요.
+
+## Git 컨벤션
+
+### 브랜치 네이밍
+
+```
+<type>/<short-description>
+
+feat/riot-api-caching
+fix/429-backoff
+refactor/riot-fetcher
+chore/gitignore-update
+```
+
+| type | 사용 시점 |
+|------|----------|
+| `feat` | 새 기능 |
+| `fix` | 버그 수정 |
+| `refactor` | 동작 변경 없는 코드 개선 |
+| `chore` | 빌드, 설정, 의존성 |
+| `docs` | 문서, 주석 |
+| `test` | 테스트 코드 |
+
+### 커밋 메시지
+
+```
+<type>: <제목> (50자 이내)
+
+<본문> — 필요한 경우에만, 무엇을 왜 변경했는지
+```
+
+- 제목은 한국어, 기술 용어(Redis, PUUID, KDA 등)는 영어 허용
+- 제목 끝에 마침표 없음
+- 본문은 `왜` 변경했는지 위주로 작성, 생략 가능
+
+**예시**
+
+```
+feat: 소환사 즐겨찾기 localStorage 저장 기능 추가
+
+fix: Riot API 429 응답 시 backoff 공유 안 되는 문제 수정
+
+refactor: RiotFetcherImpl 매치 파싱 로직 분리
+
+chore: RestTemplate connectTimeout 3초로 설정
+```
+
+### PR
+
+**제목**: 커밋 메시지와 동일한 형식
+
+```
+feat: 소환사 즐겨찾기 기능 추가
+```
+
+**본문 템플릿**
+
+```markdown
+## 작업 내용
+- 변경한 것을 bullet로 간략히
+
+## 특이사항 (선택)
+- 리뷰어에게 주의를 당부할 사항, 의도적인 trade-off 등
+```
+
+### Merge 전략
+
+- **Merge commit** 방식 사용 (GitHub UI에서 수동 merge)
+- feature 브랜치의 모든 커밋이 main에 그대로 남으므로, WIP 커밋("수정", "다시" 등)은 merge 전에 `git rebase -i`로 정리 후 merge
+
+### develop 브랜치 도입 시 (추후)
+
+프로덕션 배포가 본격화되면 `feature → develop → main` 구조로 전환하고, main에 대한 직접 push를 GitHub branch protection으로 차단할 예정.
