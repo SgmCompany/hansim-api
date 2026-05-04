@@ -51,6 +51,14 @@ public class TimeWindow {
         return new TimeWindow(start.toInstant().toEpochMilli(), end.toInstant().toEpochMilli());
     }
 
+    /** 오늘 기준 최근 n일 구간 (KST 06:00 경계 적용) */
+    public static TimeWindow ofDays(int days) {
+        LocalDate today = LocalDate.now(KST);
+        ZonedDateTime end   = today.plusDays(1).atTime(6, 0).atZone(KST);
+        ZonedDateTime start = today.minusDays(days - 1L).atTime(6, 0).atZone(KST);
+        return new TimeWindow(start.toInstant().toEpochMilli(), end.toInstant().toEpochMilli());
+    }
+
     public String getPeriodStr() {
         ZonedDateTime startKst = Instant.ofEpochMilli(start).atZone(KST);
         ZonedDateTime endKst   = Instant.ofEpochMilli(end).atZone(KST);
