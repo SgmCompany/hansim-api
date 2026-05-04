@@ -34,4 +34,15 @@ public class UserRepositoryImpl implements UserRepository {
     public void softDelete(Long id) {
         userJpaRepository.findById(id).ifPresent(UserEntity::softDelete);
     }
+
+    @Override
+    public void updateSummoner(Long id, String riotGameName, String riotTagLine, String riotPuuid) {
+        userJpaRepository.findById(id).ifPresent(entity -> {
+            if (riotPuuid == null) {
+                entity.unlinkSummoner();
+            } else {
+                entity.linkSummoner(riotGameName, riotTagLine, riotPuuid);
+            }
+        });
+    }
 }

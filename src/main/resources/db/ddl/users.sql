@@ -11,3 +11,11 @@ CREATE TABLE users
     UNIQUE KEY uq_email (email),
     UNIQUE KEY uq_social_id (social_id)
 ) COMMENT = '사용자 정보';
+
+-- 소환사 연동 컬럼 추가
+ALTER TABLE users
+    ADD COLUMN riot_game_name VARCHAR(100) NULL COMMENT '연동된 Riot 게임 이름' AFTER social_type,
+    ADD COLUMN riot_tag_line  VARCHAR(20)  NULL COMMENT '연동된 Riot 태그라인'  AFTER riot_game_name,
+    ADD COLUMN riot_puuid     VARCHAR(78)  NULL COMMENT '연동된 Riot PUUID'     AFTER riot_tag_line,
+    ADD UNIQUE KEY uq_riot_id    (riot_game_name, riot_tag_line),
+    ADD UNIQUE KEY uq_riot_puuid (riot_puuid);

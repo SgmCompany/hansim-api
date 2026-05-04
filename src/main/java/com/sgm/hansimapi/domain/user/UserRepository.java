@@ -8,4 +8,5 @@ public interface UserRepository {
     Optional<User> findBySocialIdAndSocialType(String socialId, SocialType socialType);
     User save(User user);
     void softDelete(Long id);
+    void updateSummoner(Long id, String riotGameName, String riotTagLine, String riotPuuid);
 }

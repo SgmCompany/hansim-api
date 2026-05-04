@@ -35,6 +35,18 @@ public class UserEntity {
     @Column(name = "social_type", nullable = false, length = 20)
     private SocialType socialType;
 
+    /** 연동된 Riot 게임 이름 */
+    @Column(name = "riot_game_name", length = 100)
+    private String riotGameName;
+
+    /** 연동된 Riot 태그라인 */
+    @Column(name = "riot_tag_line", length = 20)
+    private String riotTagLine;
+
+    /** 연동된 Riot PUUID */
+    @Column(name = "riot_puuid", unique = true, length = 78)
+    private String riotPuuid;
+
     /** 탈퇴 처리 시각. NULL이면 정상 회원 (soft delete) */
     @Column(name = "deleted_at", columnDefinition = "TIMESTAMP")
     private Instant deletedAt;
@@ -54,8 +66,8 @@ public class UserEntity {
     protected UserEntity() {}
 
     private UserEntity(String email, String socialId, SocialType socialType) {
-        this.email = email;
-        this.socialId = socialId;
+        this.email      = email;
+        this.socialId   = socialId;
         this.socialType = socialType;
     }
 
@@ -63,13 +75,25 @@ public class UserEntity {
         return new UserEntity(user.getEmail(), user.getSocialId(), user.getSocialType());
     }
 
+    public void linkSummoner(String riotGameName, String riotTagLine, String riotPuuid) {
+        this.riotGameName = riotGameName;
+        this.riotTagLine  = riotTagLine;
+        this.riotPuuid    = riotPuuid;
+    }
+
+    public void unlinkSummoner() {
+        this.riotGameName = null;
+        this.riotTagLine  = null;
+        this.riotPuuid    = null;
+    }
+
     public void softDelete() {
         this.deletedAt = Instant.now();
-        this.email    = "DELETED_" + this.id + "_" + this.email;
-        this.socialId = "DELETED_" + this.id + "_" + this.socialId;
+        this.email     = "DELETED_" + this.id + "_" + this.email;
+        this.socialId  = "DELETED_" + this.id + "_" + this.socialId;
     }
 
     public User toDomain() {
-        return User.of(id, email, socialId, socialType, deletedAt);
+        return User.of(id, email, socialId, socialType, riotGameName, riotTagLine, riotPuuid, deletedAt);
     }
 }

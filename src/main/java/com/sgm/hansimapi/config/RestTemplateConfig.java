@@ -3,11 +3,13 @@ package com.sgm.hansimapi.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.concurrent.Executor;
 
+@EnableAsync
 @Configuration
 public class RestTemplateConfig {
 
@@ -30,6 +32,21 @@ public class RestTemplateConfig {
         executor.setMaxPoolSize(10);
         executor.setQueueCapacity(50);
         executor.setThreadNamePrefix("batch-riot-");
+        executor.initialize();
+        return executor;
+    }
+
+    /**
+     * 소환사 연동 시 최근 데이터 프리페치용 스레드 풀.
+     * 백그라운드에서 조용히 실행되므로 단일 스레드로 충분합니다.
+     */
+    @Bean
+    public Executor prefetchExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(1);
+        executor.setMaxPoolSize(2);
+        executor.setQueueCapacity(10);
+        executor.setThreadNamePrefix("prefetch-");
         executor.initialize();
         return executor;
     }
