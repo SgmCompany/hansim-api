@@ -15,6 +15,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Summary", description = "한심 지수 조회 API")
@@ -36,23 +37,25 @@ public class SummaryController {
                     example = "페이커-KR1",
                     schema = @io.swagger.v3.oas.annotations.media.Schema(type = "string", maxLength = 50)
             ) @PathVariable String riotId,
-            SummaryRequestQuery query
+            SummaryRequestQuery query,
+            @AuthenticationPrincipal Long userId
     ) {
         SummaryCommand command = SummaryCommand.from(riotId, query);
-        Summary summary = summaryUseCase.execute(command);
+        Summary summary = summaryUseCase.execute(command, userId);
         return SummaryResponse.from(summary);
     }
 
     @Operation(summary = "다중 소환사 한심 summary 조회 (최대 10명)",
                description = "여러 소환사의 큐별 승패, 랭크 정보, 스트릭, 챔피언 통계를 한 번에 조회합니다. 비로그인/로그인 모두 사용 가능합니다.")
     @PostMapping("/summary/batch")
-    public BatchSummaryResponse getBatchSummary(@Valid @RequestBody BatchSummaryRequest request) {
+    public BatchSummaryResponse getBatchSummary(@Valid @RequestBody BatchSummaryRequest request,
+                                                @AuthenticationPrincipal Long userId) {
         BatchSummaryCommand command = BatchSummaryCommand.of(
                 request.riotIds(),
                 request.startDate(),
                 request.endDate()
         );
-        BatchSummary summary = batchSummaryUseCase.execute(command);
+        BatchSummary summary = batchSummaryUseCase.execute(command, userId);
         return BatchSummaryResponse.from(summary);
     }
 }

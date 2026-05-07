@@ -109,8 +109,11 @@ public class SummaryResponse {
         @Schema(description = "한심지수 (NINE_TO_SIX 기준)", requiredMode = Schema.RequiredMode.REQUIRED)
         private final HlsResponse hls;
 
+        @Schema(description = "호출자 급여 기준 경제적 손실 추산", requiredMode = Schema.RequiredMode.REQUIRED)
+        private final EconomicImpactResponse economicImpact;
+
         private Player(String name, Queue normal, Queue solo, Queue flex, Queue aram,
-                       int totalPlaySeconds, HlsResponse hls) {
+                       int totalPlaySeconds, HlsResponse hls, EconomicImpactResponse economicImpact) {
             this.name             = name;
             this.normal           = normal;
             this.solo             = solo;
@@ -118,6 +121,7 @@ public class SummaryResponse {
             this.aram             = aram;
             this.totalPlaySeconds = totalPlaySeconds;
             this.hls              = hls;
+            this.economicImpact   = economicImpact;
         }
 
         public static Player from(PlayerSummary player) {
@@ -128,7 +132,8 @@ public class SummaryResponse {
                     Queue.from(player.getFlex()),
                     Queue.from(player.getAram()),
                     player.getTotalPlaySeconds(),
-                    HlsResponse.from(player.getHls())
+                    HlsResponse.from(player.getHls()),
+                    EconomicImpactResponse.from(player.getEconomicImpact())
             );
         }
     }
@@ -253,4 +258,5 @@ public class SummaryResponse {
             this.pentas  = pentas;
         }
     }
+
 }

@@ -3,6 +3,7 @@ package com.sgm.hansimapi.presentation.dto.response;
 import com.sgm.hansimapi.domain.riot.LeagueEntry;
 import com.sgm.hansimapi.domain.riot.QueueType;
 import com.sgm.hansimapi.domain.summary.BatchPlayerSummary;
+import com.sgm.hansimapi.domain.summary.EconomicImpact;
 import com.sgm.hansimapi.domain.summary.BatchSummary;
 import com.sgm.hansimapi.domain.summary.ChampionStat;
 import com.sgm.hansimapi.domain.summary.QueueStat;
@@ -99,10 +100,13 @@ public class BatchSummaryResponse {
         @Schema(description = "한심지수 (NINE_TO_SIX 기준)", requiredMode = Schema.RequiredMode.REQUIRED)
         private final HlsResponse hls;
 
+        @Schema(description = "호출자 급여 기준 경제적 손실 추산", requiredMode = Schema.RequiredMode.REQUIRED)
+        private final EconomicImpactResponse economicImpact;
+
         private Player(String riotId, int profileIconId, long summonerLevel,
                        RankInfo soloRank, RankInfo flexRank, Queues queues,
                        StreakInfo streak, List<Champion> topChampions,
-                       int totalPlaySeconds, HlsResponse hls) {
+                       int totalPlaySeconds, HlsResponse hls, EconomicImpactResponse economicImpact) {
             this.riotId = riotId;
             this.profileIconId = profileIconId;
             this.summonerLevel = summonerLevel;
@@ -113,6 +117,7 @@ public class BatchSummaryResponse {
             this.topChampions = topChampions;
             this.totalPlaySeconds = totalPlaySeconds;
             this.hls = hls;
+            this.economicImpact = economicImpact;
         }
 
         public static Player from(BatchPlayerSummary p) {
@@ -126,7 +131,8 @@ public class BatchSummaryResponse {
                     StreakInfo.from(p.getStreak()),
                     p.getTopChampions().stream().map(Champion::from).toList(),
                     p.getTotalPlaySeconds(),
-                    HlsResponse.from(p.getHls())
+                    HlsResponse.from(p.getHls()),
+                    EconomicImpactResponse.from(p.getEconomicImpact())
             );
         }
     }

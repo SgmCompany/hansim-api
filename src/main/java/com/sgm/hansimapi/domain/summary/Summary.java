@@ -3,6 +3,7 @@ package com.sgm.hansimapi.domain.summary;
 import com.sgm.hansimapi.application.summary.command.SummaryCommand;
 import com.sgm.hansimapi.domain.riot.Match;
 import com.sgm.hansimapi.domain.riot.QueueType;
+import com.sgm.hansimapi.domain.user.WorkType;
 
 import java.time.Instant;
 import java.util.List;
@@ -19,7 +20,8 @@ public class Summary {
         this.players = players;
     }
 
-    public static Summary from(List<Match> matches, SummaryCommand command) {
+    public static Summary from(List<Match> matches, SummaryCommand command,
+                               WorkType callerWorkType, Integer callerSalaryAmount) {
         Map<QueueType, List<Match>> byQueue = matches.stream()
                 .collect(Collectors.groupingBy(Match::getQueueType));
 
@@ -32,9 +34,11 @@ public class Summary {
         HlsResult hls = HlsCalculator.calculate(matches);
 
         int totalPlaySeconds = matches.stream().mapToInt(Match::getGameDuration).sum();
+        EconomicImpact economicImpact = EconomicImpact.of(totalPlaySeconds, callerWorkType, callerSalaryAmount);
 
         String playerName = command.getGameName() + "#" + command.getTagLine();
-        PlayerSummary player = new PlayerSummary(playerName, normal, solo, flex, aram, hls, totalPlaySeconds);
+        PlayerSummary player = new PlayerSummary(playerName, normal, solo, flex, aram, hls,
+                totalPlaySeconds, economicImpact);
 
         return new Summary(command.getTimeWindow(), List.of(player));
     }
