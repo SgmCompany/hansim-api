@@ -2,6 +2,7 @@ package com.sgm.hansimapi.infra.user;
 
 import com.sgm.hansimapi.domain.user.SocialType;
 import com.sgm.hansimapi.domain.user.User;
+import com.sgm.hansimapi.domain.user.WorkType;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
@@ -34,6 +35,15 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "social_type", nullable = false, length = 20)
     private SocialType socialType;
+
+    /** 근무 유형 */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "work_type", length = 20)
+    private WorkType workType;
+
+    /** 급여 (원 단위). 연봉제=연봉, 시급제=시급. STUDENT/UNEMPLOYED는 null */
+    @Column(name = "salary_amount")
+    private Integer salaryAmount;
 
     /** 연동된 Riot 게임 이름 */
     @Column(name = "riot_game_name", length = 100)
@@ -75,6 +85,11 @@ public class UserEntity {
         return new UserEntity(user.getEmail(), user.getSocialId(), user.getSocialType());
     }
 
+    public void updateProfile(WorkType workType, Integer salaryAmount) {
+        this.workType      = workType;
+        this.salaryAmount  = salaryAmount;
+    }
+
     public void linkSummoner(String riotGameName, String riotTagLine, String riotPuuid) {
         this.riotGameName = riotGameName;
         this.riotTagLine  = riotTagLine;
@@ -94,6 +109,8 @@ public class UserEntity {
     }
 
     public User toDomain() {
-        return User.of(id, email, socialId, socialType, riotGameName, riotTagLine, riotPuuid, deletedAt);
+        return User.of(id, email, socialId, socialType,
+                workType, salaryAmount,
+                riotGameName, riotTagLine, riotPuuid, deletedAt);
     }
 }
