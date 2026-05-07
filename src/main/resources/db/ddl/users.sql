@@ -12,6 +12,11 @@ CREATE TABLE users
     UNIQUE KEY uq_social_id (social_id)
 ) COMMENT = '사용자 정보';
 
+-- 근무 유형 및 급여 컬럼 추가
+ALTER TABLE users
+    ADD COLUMN work_type      VARCHAR(20) NULL COMMENT '근무 유형'                              AFTER social_type,
+    ADD COLUMN salary_amount  INT         NULL COMMENT '급여 (원 단위). 연봉제=연봉, 시급제=시급' AFTER work_type;
+
 -- 소환사 연동 컬럼 추가
 ALTER TABLE users
     ADD COLUMN riot_game_name VARCHAR(100) NULL COMMENT '연동된 Riot 게임 이름' AFTER social_type,

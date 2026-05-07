@@ -4,6 +4,7 @@ import com.sgm.hansimapi.domain.riot.LeagueEntry;
 import com.sgm.hansimapi.domain.riot.Match;
 import com.sgm.hansimapi.domain.riot.QueueType;
 import com.sgm.hansimapi.domain.riot.SummonerInfo;
+import com.sgm.hansimapi.domain.user.WorkType;
 
 import java.util.List;
 import java.util.Map;
@@ -22,13 +23,16 @@ public class BatchPlayerSummary {
     private final List<ChampionStat> topChampions;
     private final HlsResult hls;
 
-    /** 전체 큐 합산 총 플레이 시간 (초) — 최저시급 환산 등에 활용 */
+    /** 전체 큐 합산 총 플레이 시간 (초) */
     private final int totalPlaySeconds;
+
+    /** 호출자 급여 기준 경제적 손실 추산 */
+    private final EconomicImpact economicImpact;
 
     private BatchPlayerSummary(String riotId, SummonerInfo summonerInfo, List<LeagueEntry> leagueEntries,
                                 QueueStat normal, QueueStat solo, QueueStat flex, QueueStat aram,
                                 Streak streak, List<ChampionStat> topChampions, HlsResult hls,
-                                int totalPlaySeconds) {
+                                int totalPlaySeconds, EconomicImpact economicImpact) {
         this.riotId = riotId;
         this.summonerInfo = summonerInfo;
         this.leagueEntries = leagueEntries;
@@ -40,10 +44,12 @@ public class BatchPlayerSummary {
         this.topChampions = topChampions;
         this.hls = hls;
         this.totalPlaySeconds = totalPlaySeconds;
+        this.economicImpact = economicImpact;
     }
 
     public static BatchPlayerSummary from(String riotId, SummonerInfo summonerInfo,
-                                          List<LeagueEntry> leagueEntries, List<Match> matches) {
+                                          List<LeagueEntry> leagueEntries, List<Match> matches,
+                                          WorkType callerWorkType, Integer callerSalaryAmount) {
         Map<QueueType, List<Match>> byQueue = matches.stream()
                 .collect(Collectors.groupingBy(Match::getQueueType));
 
@@ -56,8 +62,10 @@ public class BatchPlayerSummary {
         List<ChampionStat> topChampions = ChampionStat.topFrom(matches);
         HlsResult hls = HlsCalculator.calculate(matches);
         int totalPlaySeconds = matches.stream().mapToInt(Match::getGameDuration).sum();
+        EconomicImpact economicImpact = EconomicImpact.of(totalPlaySeconds, callerWorkType, callerSalaryAmount);
 
-        return new BatchPlayerSummary(riotId, summonerInfo, leagueEntries, normal, solo, flex, aram, streak, topChampions, hls, totalPlaySeconds);
+        return new BatchPlayerSummary(riotId, summonerInfo, leagueEntries, normal, solo, flex, aram,
+                streak, topChampions, hls, totalPlaySeconds, economicImpact);
     }
 
     private static QueueStat toStatOrNull(Map<QueueType, List<Match>> byQueue, QueueType type) {
@@ -83,4 +91,5 @@ public class BatchPlayerSummary {
     public List<ChampionStat> getTopChampions()  { return topChampions; }
     public HlsResult getHls()                    { return hls; }
     public int getTotalPlaySeconds()             { return totalPlaySeconds; }
+    public EconomicImpact getEconomicImpact()    { return economicImpact; }
 }

@@ -9,4 +9,5 @@ public interface UserRepository {
     User save(User user);
     void softDelete(Long id);
     void updateSummoner(Long id, String riotGameName, String riotTagLine, String riotPuuid);
+    void updateProfile(Long id, WorkType workType, Integer salaryAmount);
 }

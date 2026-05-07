@@ -3,6 +3,7 @@ package com.sgm.hansimapi.infra.user;
 import com.sgm.hansimapi.domain.user.SocialType;
 import com.sgm.hansimapi.domain.user.User;
 import com.sgm.hansimapi.domain.user.UserRepository;
+import com.sgm.hansimapi.domain.user.WorkType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -33,6 +34,12 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public void softDelete(Long id) {
         userJpaRepository.findById(id).ifPresent(UserEntity::softDelete);
+    }
+
+    @Override
+    public void updateProfile(Long id, WorkType workType, Integer salaryAmount) {
+        userJpaRepository.findById(id)
+                .ifPresent(entity -> entity.updateProfile(workType, salaryAmount));
     }
 
     @Override

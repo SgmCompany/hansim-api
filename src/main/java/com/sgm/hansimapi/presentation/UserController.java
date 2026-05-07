@@ -3,7 +3,9 @@ package com.sgm.hansimapi.presentation;
 import com.sgm.hansimapi.application.user.usecase.GetMyProfileUseCase;
 import com.sgm.hansimapi.application.user.usecase.LinkSummonerUseCase;
 import com.sgm.hansimapi.application.user.usecase.UnlinkSummonerUseCase;
+import com.sgm.hansimapi.application.user.usecase.UpdateProfileUseCase;
 import com.sgm.hansimapi.presentation.dto.request.LinkSummonerRequest;
+import com.sgm.hansimapi.presentation.dto.request.UpdateProfileRequest;
 import com.sgm.hansimapi.presentation.dto.response.MyProfileResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
 
     private final GetMyProfileUseCase getMyProfileUseCase;
+    private final UpdateProfileUseCase updateProfileUseCase;
     private final LinkSummonerUseCase linkSummonerUseCase;
     private final UnlinkSummonerUseCase unlinkSummonerUseCase;
 
@@ -29,6 +32,15 @@ public class UserController {
     @GetMapping("/me")
     public MyProfileResponse getMyProfile(@AuthenticationPrincipal Long userId) {
         return MyProfileResponse.from(getMyProfileUseCase.execute(userId));
+    }
+
+    @Operation(summary = "프로필 업데이트",
+               description = "근무 유형과 세전 연봉을 등록/변경합니다. 한심지수 알고리즘 선택에 사용됩니다.")
+    @PutMapping("/me/profile")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void updateProfile(@AuthenticationPrincipal Long userId,
+                              @Valid @RequestBody UpdateProfileRequest request) {
+        updateProfileUseCase.execute(userId, request.workType(), request.salaryAmount());
     }
 
     @Operation(summary = "소환사 연동/변경",
